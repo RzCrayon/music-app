@@ -17,9 +17,10 @@ import signal
 import traceback
 from celery import Celery
 
-from omr_processor import extract_notes
 from dotenv import load_dotenv
 load_dotenv()
+
+from omr_processor import extract_notes
 
 #cmd to start the worker
 #celery -A tasks.celery_app worker --loglevel=info -P gevent --concurrency=4

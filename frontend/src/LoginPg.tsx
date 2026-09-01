@@ -214,7 +214,6 @@ function LoginPg() {
                     return;
                 }
                 const res = await apiService.createUser(user.username, user.password);
-                console.log(res);
                 if (res.limit) {
                     setSignUpLimit(Number(res.limit));
                     setUser({ ...user, password: '' });

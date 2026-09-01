@@ -82,7 +82,7 @@ def run_audiveris(image_path, output_dir, progress_cb = None):
         process.wait()
         if process.returncode != 0:
             # give the last handful of lines as error context, same intent as the old stderr capture
-            raise RuntimeError("\n".join(output_lines[-20:]))
+            raise RuntimeError("\n".join(output_lines))
 
         return "\n".join(output_lines)
 
@@ -364,6 +364,7 @@ def extract_notes(image_path, preprocess_preset="clean_pdf", progress_cb = None)
         try:
             notify(f"Cleaning export {i+1} ({xml_file})")
             events = parse_score(xml_file)
+
             events = clean_extracted_note_chord_errs(events)
 
             #inserts rests at the end of unsynced measures so that the initial render 

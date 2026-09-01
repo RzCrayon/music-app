@@ -22,9 +22,14 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # --- Audiveris ---
-# 5.9.0 ships a .deb with a bundled JRE, so no separate `apt install openjdk` needed.
-# It installs itself to /opt/audiveris/ and drops a launcher at /opt/audiveris/bin/Audiveris
-# If a newer version comes out, bump the version/filename here.
+# Pinned to match your Windows install (5.10.2) exactly. Audiveris's OMR
+# engine (classifier models, beam/stem/head detection heuristics) changes
+# between releases, so mismatched versions between environments will produce
+# genuinely different recognition results on identical input — this isn't a
+# Linux vs. Windows quirk, it's two different algorithm versions. Keep this
+# in sync with whichever Windows version you're comparing against.
+# 5.10.2 ships a .deb with a bundled JRE, so no separate `apt install openjdk`
+# is needed. It installs to /opt/audiveris/, launcher at /opt/audiveris/bin/Audiveris
 #
 # The .deb's postinst script tries to register a desktop menu entry via
 # xdg-desktop-menu, which fails in a headless container (exit status 3,
@@ -35,10 +40,10 @@ RUN apt-get update && apt-get install -y \
 # unaffected either way.
 RUN apt-get update && apt-get install -y xdg-utils \
     && for cmd in xdg-desktop-menu xdg-desktop-icon xdg-icon-resource xdg-mime; do \
-         printf '#!/bin/sh\nexit 0\n' > /usr/bin/$cmd && chmod +x /usr/bin/$cmd; \
-       done \
+    printf '#!/bin/sh\nexit 0\n' > /usr/bin/$cmd && chmod +x /usr/bin/$cmd; \
+    done \
     && wget -O /tmp/audiveris.deb \
-       https://github.com/Audiveris/audiveris/releases/download/5.9.0/Audiveris-5.9.0-ubuntu24.04-x86_64.deb \
+    https://github.com/Audiveris/audiveris/releases/download/5.10.2/Audiveris-5.10.2-ubuntu24.04-x86_64.deb \
     && apt-get install -y /tmp/audiveris.deb \
     && rm /tmp/audiveris.deb \
     && rm -rf /var/lib/apt/lists/*
