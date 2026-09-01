@@ -1,0 +1,114 @@
+:root {
+
+  --bg: rgb(231, 231, 231);
+  --primary-accent:
+    /* #99afd7; */
+    #fdad66;
+  --secondary-accent:
+    /* #4470ad; */
+    #9e5b20;
+  --tertiary-accent:
+    /* #6888be; */
+    #da7f30;
+  --err-colour: rgb(205, 29, 29);
+  --warning-colour: rgb(255, 255, 0);
+  --success-colour: rgb(79, 167, 79);
+  --select-colour: rgb(99, 167, 255);
+
+  --primary-text: white;
+  --secondary-text: rgba(100, 100, 100, 1);
+  --tertiary-text:
+    /* #6888be; */
+    #9e5b20;
+
+  --text-highlight: rgba(100, 100, 100, 0.55);
+
+  --disabled-colour: #693a11;
+
+}
+
+@font-face {
+  font-family: 'Bravura';
+  src: url('/Bravura.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Elms Sans';
+  src: url('/ElmsSans-VariableFont_wght.ttf') format('truetype-variations');
+  font-weight: 100 900;
+}
+
+html,
+body {
+  background-color: var(--bg);
+
+  color: white;
+  font-family: "Elms Sans", sans-serif;
+  font-weight: 400;
+  font-size: large;
+  word-spacing: -2px;
+  letter-spacing: 1.5px;
+  user-select: none;
+
+  margin: 0;
+
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+
+}
+
+button {
+  all: unset;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+button:active {
+  transform: scale(0.9);
+}
+
+input {
+  /* box-shadow: inset 0px 0px 30px rgba(0, 0, 0, 0.6); */
+  border-radius: 20px;
+  border: 3px solid var(--primary-text);
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0);
+  color: var(--primary-text);
+
+  font-family: "Elms Sans", sans-serif;
+  font-weight: 500;
+  font-size: medium;
+  letter-spacing: 1.5px;
+
+  box-sizing: border-box;
+  width: 100%;
+
+}
+
+input:focus {
+  outline: none;
+}
+
+input::placeholder {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+input::selection {
+  background-color: var(--text-highlight);
+}
+
+input::-webkit-selection {
+  background-color: var(--text-highlight);
+}
+
+/*this makes sure that all component sizing works the same way and uses borderboxes*/
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}

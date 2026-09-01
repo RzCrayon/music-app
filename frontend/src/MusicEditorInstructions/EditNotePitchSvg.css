@@ -1,0 +1,310 @@
+.instructions-container.edit-note-pitch {
+    --moveDistX1: 0;
+    --moveDistY1: 0;
+    --moveDistX2: 0;
+    --moveDistY2: 0;
+    --moveDistX3: 0;
+    --moveDistY3: 0;
+    --moveDistX4: 0;
+    --moveDistY4: 0;
+    --scrollDist: 0;
+    --animDur: 0s;
+}
+
+@keyframes scroll-screen-edit-note-pitch {
+
+    /* 0.00s -> 1.90s */
+    0.00%,
+    9.90% {
+        transform: translate(0, 0);
+    }
+
+    /* 5.10s -> 5.90s: scroll down */
+    26.56%,
+    30.73% {
+        transform: translate(0, calc(var(--scrollDist) * -1px));
+    }
+
+    /* 9.10s -> 10.10s: scroll back up */
+    47.40%,
+    52.60% {
+        transform: translate(0, 0);
+    }
+
+    /* 14.80s -> 15.50s: scroll down */
+    77.08%,
+    80.73% {
+        transform: translate(0, calc(var(--scrollDist) * -1px));
+    }
+
+    /* 18.20s -> 19.20s: back at the top 1 final time */
+    94.79%,
+    100.00% {
+        transform: translate(0, 0);
+    }
+}
+
+.instructions-container.edit-note-pitch .scroll-group {
+    animation: scroll-screen-edit-note-pitch var(--animDur) ease-in-out infinite;
+}
+
+@keyframes cursor-float-edit-note-pitch {
+
+    /* 0.50s */
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    /* 1.50s -> 1.70s: rest before clicking */
+    7.81%,
+    8.85% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1) * -1px)) scale(1);
+    }
+
+    /* 1.80s: click down */
+    9.38% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1) * -1px)) scale(0.6);
+    }
+
+    /* 1.90s: click release */
+    9.90% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1) * -1px)) scale(1);
+    }
+
+    /* 5.10s: move to the up button */
+    26.56% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2) * -1px)) scale(1)
+    }
+
+    /* 5.20s: click down */
+    27.08% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2) * -1px)) scale(0.6)
+    }
+
+    /* 5.30s -> 5.60s: click release + inter-click pause */
+    27.60%,
+    29.17% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2) * -1px)) scale(1)
+    }
+
+    /* 5.80s: click down */
+    30.21% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2) * -1px)) scale(0.6)
+    }
+
+    /* 5.90s: click release */
+    30.73% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2) * -1px)) scale(1)
+    }
+
+    /* 9.10s -> 10.10s: move back up to point 1 + stay there for 0.5 sec to process what just happened */
+    47.40%,
+    52.60% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    /* 14.80s: move back down to point 3 */
+    77.08% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3) * -1px)) scale(1);
+    }
+
+    /* 14.90s: click down */
+    77.60% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3) * -1px)) scale(0.6);
+    }
+
+    /* 15.00s -> 15.30s: click release + inter-click pause */
+    78.12%,
+    79.69% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3) * -1px)) scale(1);
+    }
+
+    /* 15.40s: click down */
+    80.21% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3) * -1px)) scale(0.6);
+    }
+
+    /* 15.50s: click release */
+    80.73% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3) * -1px)) scale(1);
+    }
+
+    /* 18.20s: move back up to point 1 + stay there for 1s b4 restarting the cycle */
+    94.79% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    /* 18.30s: click down */
+    95.31% {
+        transform: translate(0, 0) scale(0.6);
+    }
+
+    /* 18.40s -> 19.20s: click release + stay there for a sec b4 starting a new cycle */
+    95.83%,
+    100.00% {
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+.instructions-container.edit-note-pitch .cursor {
+    animation: cursor-float-edit-note-pitch var(--animDur) ease-in-out infinite;
+}
+
+@keyframes click-note-edit-note-pitch {
+
+    /* 0.00s -> 1.50s */
+    0.00%,
+    7.81% {
+        fill: black;
+        transform: scale(1);
+    }
+
+    /* 1.60s -> 1.80s */
+    8.33%,
+    9.38% {
+        fill: black;
+        transform: scale(1.2)
+    }
+
+    /* 1.90s -> 18.20s */
+    9.90%,
+    94.79% {
+        fill: var(--tertiary-accent);
+        transform: scale(1.2)
+    }
+
+    /* 18.30s -> 19.20s */
+    95.31%,
+    100.00% {
+        fill: black;
+        transform: scale(1)
+    }
+}
+
+.instructions-container.edit-note-pitch .mock-note {
+    animation: click-note-edit-note-pitch var(--animDur) ease-in-out infinite;
+}
+
+@keyframes click-increase-edit-note-pitch {
+
+    /* 0.00s -> 4.90s */
+    0.00%,
+    25.52% {
+        transform: scale(1);
+    }
+
+    /* 5.10s */
+    26.56% {
+        transform: scale(1.2)
+    }
+
+    /* 5.20s */
+    27.08% {
+        transform: scale(1)
+    }
+
+    /* 5.30s -> 5.60s */
+    27.60%,
+    29.17% {
+        transform: scale(1.2)
+    }
+
+    /* 5.80s */
+    30.21% {
+        transform: scale(1)
+    }
+
+    /* 5.90s */
+    30.73% {
+        transform: scale(1.2)
+    }
+
+    /* 6.10s */
+    31.77%,
+    100% {
+        transform: scale(1)
+    }
+}
+
+.instructions-container.edit-note-pitch .mock-inc-pitch {
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: click-increase-edit-note-pitch var(--animDur) ease-in-out infinite;
+}
+
+@keyframes click-decrease-edit-note-pitch {
+
+    /* 0.00s -> 14.60s */
+    0.00%,
+    76.04% {
+        transform: scale(1);
+    }
+
+    /* 14.80s */
+    77.08% {
+        transform: scale(1.2)
+    }
+
+    /* 14.90s */
+    77.60% {
+        transform: scale(1)
+    }
+
+    /* 15.00s -> 15.30s */
+    78.12%,
+    79.69% {
+        transform: scale(1.2)
+    }
+
+    /* 15.50s */
+    80.73% {
+        transform: scale(1)
+    }
+
+    /* 15.60s */
+    81.25% {
+        transform: scale(1.2)
+    }
+
+    /* 15.80s -> 100% */
+    82.29%,
+    100% {
+        transform: scale(1)
+    }
+}
+
+.instructions-container.edit-note-pitch .mock-dec-pitch {
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: click-decrease-edit-note-pitch var(--animDur) ease-in-out infinite;
+}
+
+@keyframes expand-popup-edit-note-pitch {
+
+    /* 0.00s -> 1.70s */
+    0.00%,
+    8.85% {
+        transform: scale(0.5);
+        opacity: 0
+    }
+
+    /* 1.80s -> 18.30s */
+    9.38%,
+    95.31% {
+        transform: scale(1);
+        opacity: 1
+    }
+
+    /* 18.40s -> 100% */
+    95.83%,
+    100% {
+        transform: scale(0.5);
+        opacity: 0
+    }
+}
+
+.instructions-container.edit-note-pitch .mock-popup-container {
+    transform-box: fill-box;
+    transform-origin: top center;
+    animation: expand-popup-edit-note-pitch var(--animDur) ease-in-out infinite;
+}

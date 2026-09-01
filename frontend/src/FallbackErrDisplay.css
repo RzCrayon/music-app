@@ -1,0 +1,88 @@
+.fallback-err-display {
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--err-colour);
+    flex-direction: column;
+    gap: 10px;
+    padding: 10%;
+    text-align: center;
+    z-index: 1500;
+}
+
+.fallback-err-display button {
+    border: 2px solid var(--err-colour);
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 10px;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.3s ease;
+}
+
+.fallback-err-display button:hover {
+    background-color: var(--err-colour);
+    color: var(--primary-text);
+}
+
+.on-air-svg {
+
+    --glow-colour: color-mix(in srgb, var(--err-colour) 40%, white 50%);
+
+    font-size: 4em;
+    font-weight: bold;
+    padding: 15px;
+    padding-left: 30px;
+    padding-right: 30px;
+    border-radius: 10px;
+
+    margin-bottom: 80px;
+
+    animation: on-air-anim 3.5s ease-in-out forwards;
+
+    color: var(--err-colour);
+    border: 3px solid var(--err-colour);
+    box-shadow:
+        0 0 20px var(--err-colour),
+        inset 0 0 10px var(--err-colour);
+    text-shadow:
+        0 0 5px var(--glow-colour),
+        0 0 15px var(--glow-colour),
+        0 0 30px var(--glow-colour);
+
+}
+
+
+@keyframes on-air-anim {
+
+    /* Extended initial delay: Stay fully ON until 30% */
+    0%,
+    30% {
+        opacity: 1;
+    }
+
+    /* --- TIGHT FLICKER 1 --- */
+    34% {
+        opacity: 0.3;
+    }
+
+    37% {
+        opacity: 1;
+    }
+
+    /* --- TIGHT FLICKER 2 --- */
+    40% {
+        opacity: 0.3;
+    }
+
+    42% {
+        opacity: 1;
+    }
+
+    /* --- DEAD PAUSE --- */
+    45%,
+    100% {
+        opacity: 0.3;
+    }
+}

@@ -1,0 +1,295 @@
+.sign-in-pad {
+    background-color: var(--primary-accent);
+    border-radius: 30px;
+    box-shadow: 0px 0px 50px black;
+    padding: 30px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    box-sizing: border-box;
+    transition: transform 0.2s ease;
+    width: 500px;
+    gap: 80px;
+    transform: translateX(0%);
+    transition: transform 1s ease-in-out;
+    overflow: hidden;
+}
+
+.sign-in-pad form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.sign-in-pad .inner-field-mssg {
+    align-self: flex-start;
+    padding-left: 10px;
+    margin-top: -15px;
+    font-weight: bold;
+    font-size: small;
+    color: var(--tertiary-text);
+    transition: transform 0.3s ease, opacity 0.2s ease;
+    opacity: 1;
+}
+
+.sign-in-pad .inner-field-mssg.not-visible {
+    transform: translateX(-110%);
+    opacity: 0;
+}
+
+
+
+.sign-in-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    max-height: 550px;
+    min-width: 100%;
+    transition: transform 1s ease-in-out, scale 1.2s 0.2s ease-in-out, opacity 0.6s ease-out;
+}
+
+.sign-in-layout.sign-in {
+    opacity: 1;
+    scale: 1;
+    transform: translateX(0%)
+}
+
+.sign-in-layout.sign-in.switch {
+    opacity: 0;
+    scale: 0.9;
+    transform: translateX(calc(-100% - 80px));
+}
+
+.sign-in-layout.sign-up {
+    opacity: 0;
+    scale: 0.9;
+    transform: translateX(0%);
+}
+
+.sign-in-layout.sign-up.switch {
+    opacity: 1;
+    scale: 1;
+    transform: translateX(calc(-100% - 80px));
+}
+
+.input-sxn {
+    width: 100%;
+    height: 40px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.input-container {
+    width: 100%;
+    position: relative;
+}
+
+.input-container label {
+    position: absolute;
+    top: 50%;
+    transform: translateY(calc(-50%));
+    left: 5px;
+    pointer-events: none;
+    transition: transform 0.3s ease;
+    background-color: var(--primary-accent);
+    height: 25px;
+    padding: 0 8px;
+    margin-left: 10px;
+}
+
+.input-container input:-webkit-autofill,
+.input-container input:-webkit-autofill:hover,
+.input-container input:-webkit-autofill:focus,
+.input-container input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0px 1000px var(--primary-accent) inset !important;
+    -webkit-text-fill-color: var(--primary-text) !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.input-container input:focus+label,
+.input-container input:not(:placeholder-shown)+label {
+    font-size: small;
+    transform: translateY(calc(-150%));
+}
+
+.input-sxn.err {
+    color: var(--err-colour);
+}
+
+.input-sxn.err input {
+    color: var(--err-colour);
+    border: 3px solid var(--err-colour);
+}
+
+.input-sxn.err {
+    animation: shake 0.4s ease-in-out;
+}
+
+.input-sxn.warn {
+    color: var(--warning-colour);
+}
+
+.input-sxn.warn input {
+    color: var(--warning-colour);
+    border: 3px solid var(--warning-colour);
+}
+
+.input-sxn.warn {
+    animation: shake 0.4s ease-in-out;
+}
+
+.eye-lid {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    bottom: 0;
+    /*margin auto + the height matching the svg will center the content perfectly*/
+    margin: auto 0;
+    height: 25px;
+    width: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transform-origin: top;
+    transition: scale 0.3s ease;
+}
+
+.eye-lid:hover {
+    scale: 1.3;
+}
+
+.eye-lid:active {
+    scale: 0.8
+}
+
+.eye-lid svg {
+    width: 25px;
+    height: 25px;
+}
+
+.eye-lid.err::after {
+    background-color: var(--err-colour);
+}
+
+.eye-lid.warn::after {
+    background-color: var(--warning-colour);
+}
+
+.eye-lid::after {
+    content: "";
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    width: 0px;
+    height: 2px;
+    background-color: var(--primary-text);
+
+    transform: translateY(-50%) rotate(-45deg);
+    transform-origin: right center;
+
+    transition: width 0.3s ease-in-out;
+    pointer-events: none;
+}
+
+.eye-lid.closed::after {
+    width: 35px;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: scale(1) translateX(0);
+    }
+
+    15%,
+    45%,
+    75% {
+        transform: scale(1) translateX(-4px);
+    }
+
+    30%,
+    60%,
+    90% {
+        transform: scale(1) translateX(4px);
+    }
+}
+
+.primary-option.disabled {
+    background-color: var(--disabled-colour);
+    color: var(--disabled-text);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.primary-option {
+    all: unset;
+    padding: 20px 30px;
+    border-radius: 999px;
+    /*horizontal shift, vertical shift, blur radius*/
+    box-shadow: 0px 0px 50px black;
+    box-sizing: border-box;
+    width: 100%;
+    cursor: default;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+.primary-option:hover:not(.disabled) {
+    cursor: pointer;
+    transform: scale(1.05);
+}
+
+.primary-option:active:not(.disabled) {
+    transform: scale(0.95);
+}
+
+.primary-option:focus-visible {
+    outline: 2px solid var(--primary-text);
+    outline-offset: 4px;
+}
+
+.secondary-option {
+    margin-top: 20px;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    font-size: smaller;
+    margin-bottom: 0;
+    color: var(--primary-text);
+    transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.secondary-option:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+    color: var(--tertiary-text)
+}
+
+.secondary-option:focus {
+    transform: scale(1.05);
+    color: var(--tertiary-text)
+}
+
+.loading-container-signin {
+    width: 100vw;
+    height: 100dvh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}

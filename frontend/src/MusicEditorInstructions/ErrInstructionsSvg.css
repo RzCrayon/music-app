@@ -1,0 +1,105 @@
+.instructions-container.dealing-with-errs {
+    --moveDistX1: 0;
+    --moveDistY1: 0;
+    --moveDistX2: 0;
+    --moveDistY2: 0;
+    --moveDistX3: 0;
+    --moveDistY3: 0;
+    --animDur: 0s;
+}
+
+@keyframes cursor-float-errs {
+
+    /* 0.00s */
+    0.00% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    /* 1.50s -> 3.00s: move to warning + chill there */
+    15.96%,
+    31.91% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1)* -1px)) scale(1);
+    }
+
+    /* 4.50s -> 4.70s: move to add button */
+    47.87%,
+    50.00% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2)* -1px)) scale(1);
+    }
+
+    /* 4.80s: click */
+    51.06% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2)* -1px)) scale(0.6);
+    }
+
+    /* 4.90s -> 5.10s: release */
+    52.13%,
+    54.26% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2)* -1px)) scale(1);
+    }
+
+    /* 5.60s -> 6.10s: move to x button */
+    59.57%,
+    64.89% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3)* -1px)) scale(1);
+    }
+
+    /* 6.20s: click1 */
+    65.96% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3)* -1px)) scale(0.6);
+    }
+
+    /* 6.30s -> 6.80s: release1 */
+    67.02%,
+    72.34% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3)* -1px)) scale(1);
+    }
+
+    /* 6.90s: click1 */
+    73.40% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3)* -1px)) scale(0.6);
+    }
+
+    /* 7.00s -> 7.50s: release1 */
+    74.47%,
+    79.79% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3)* -1px)) scale(1);
+    }
+
+    /* 7.60s: click1 */
+    80.85% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3)* -1px)) scale(0.6);
+    }
+
+    /* 7.70s -> 8.20s: release1 */
+    81.91%,
+    87.23% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3)* -1px)) scale(1);
+    }
+
+    /* 9.20s -> 9.40s */
+    97.87%,
+    100.00% {
+        transform: translate(0, 0)
+    }
+}
+
+.instructions-container.dealing-with-errs .cursor {
+    animation: cursor-float-errs var(--animDur) ease-in-out infinite;
+}
+
+.instructions-container.dealing-with-errs .warning-button,
+.instructions-container.dealing-with-errs .add-button {
+    scale: 1;
+    transition: scale 0.2s ease;
+    transform-origin: center;
+    transform-box: fill-box;
+}
+
+.instructions-container.dealing-with-errs .warning-button.hovered {
+    scale: 1.2;
+}
+
+.instructions-container.dealing-with-errs .warning-button.clicked {
+    scale: 0.8
+}

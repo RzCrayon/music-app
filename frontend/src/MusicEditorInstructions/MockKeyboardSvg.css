@@ -1,0 +1,10 @@
+.key {
+    transform-origin: center;
+    transform-box: fill-box;
+}
+
+.key text {
+    text-anchor: middle;
+    dominant-baseline: central;
+    fill: var(--primary-text);
+}

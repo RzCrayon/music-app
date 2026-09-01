@@ -1,0 +1,57 @@
+.mock-popup-container .button-type1 text {
+    fill: var(--tertiary-text);
+}
+
+.mock-popup-container .button-type2 text {
+    fill: var(--primary-text);
+}
+
+.mock-popup-container text {
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.mock-popup-container .mock-dotted-button rect {
+    fill: var(--tertiary-accent);
+    transition: fill 0.2s ease;
+}
+
+.mock-popup-container .mock-dotted-button.dotted rect {
+    fill: var(--primary-text);
+}
+
+.mock-popup-container .mock-dotted-button svg {
+    fill: transparent
+}
+
+.mock-popup-container .mock-dotted-button.dotted svg {
+    fill: var(--tertiary-accent)
+}
+
+.mock-popup-container .mock-type-rect rect {
+    fill: var(--tertiary-accent);
+    stroke: var(--primary-text);
+    transition: fill 0.2s ease, stroke 0.2s ease;
+}
+
+.mock-popup-container .mock-type-rect.selected rect {
+    stroke: var(--primary-text);
+    fill: var(--primary-text);
+}
+
+.mock-popup-container .mock-type-rect.disabled rect {
+    stroke: var(--tertiary-text);
+    fill: var(--tertiary-accent);
+}
+
+.mock-popup-container .mock-type-rect text {
+    fill: var(--primary-text)
+}
+
+.mock-popup-container .mock-type-rect.selected text {
+    fill: var(--tertiary-accent);
+}
+
+.mock-popup-container .mock-type-rect.disabled text {
+    fill: var(--tertiary-text);
+}

@@ -1,0 +1,39 @@
+.mock-ref-img-tab {
+    opacity: 0;
+    scale: 0.5;
+    transition: scale 0.2s ease, opacity 0.2s ease;
+}
+
+.mock-ref-img-tab.open {
+    opacity: 1;
+    scale: 1;
+}
+
+.mock-ref-img-tab .mock-ref-img-button {
+    scale: 1;
+    transform-origin: center;
+    transform-box: fill-box;
+    transition: scale 0.1s ease;
+}
+
+.mock-ref-img-tab .mock-ref-img-button svg {
+    fill: var(--primary-text);
+}
+
+.mock-ref-img-tab .mock-ref-img-button text {
+    fill: var(--primary-text);
+}
+
+.mock-ref-img-tab .mock-ref-img-button.clicked {
+    scale: 0.8;
+    transform-origin: center;
+    transform-box: fill-box;
+    transition: scale 0.1s ease;
+}
+
+.mock-ref-img-tab .mock-ref-img-button.hovered {
+    scale: 1.3;
+    transform-origin: center;
+    transform-box: fill-box;
+    transition: scale 0.1s ease;
+}

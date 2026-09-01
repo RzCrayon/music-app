@@ -1,0 +1,150 @@
+.sheet-music-container {
+    all: unset;
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.measure-number {
+    font-size: 50px;
+}
+
+.note {
+    fill: var(--note-colour);
+    stroke: black;
+    font-family: Bravura;
+    font-size: 100px;
+    font-weight: lighter;
+    cursor: pointer;
+    /*so that the neighbouring notes don't jiggle*/
+    will-change: transform;
+    /*so that it doesnt shoot out ot the bottom right */
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.clef {
+    pointer-events: none;
+    fill: black;
+    stroke: black;
+    font-family: Bravura;
+    font-size: 100px;
+    font-weight: lighter;
+}
+
+.time-sig {
+    pointer-events: none;
+    fill: black;
+    stroke: black;
+    font-family: Bravura;
+    font-size: 100px;
+    font-weight: lighter;
+}
+
+.note.accidental {
+    font-size: 70px;
+}
+
+.note-hitbox {
+    transition: transform 0.2s ease-in-out, filter 0.2s ease, fill 0.1s ease;
+    cursor: pointer;
+    --note-colour: black;
+}
+
+.note-hitbox.selected .note {
+    filter: drop-shadow(0px 8px 20px rgba(255, 255, 255, 0.6));
+    fill: var(--tertiary-accent) !important;
+}
+
+.note-hitbox.emphasis .note {
+    transform: scale(1.5) translateX(-5px);
+}
+
+.note-hitbox.left-facing.emphasis .note {
+    transform: scale(1.5) translateX(5px);
+}
+
+.note-hitbox.with-err .note {
+    fill: red !important;
+}
+
+.note-hitbox:hover .note {
+    filter: drop-shadow(0px 8px 20px rgba(255, 255, 255, 0.6));
+    transform: scale(1.2) translateX(-3px)
+}
+
+.note-hitbox.disabled:hover .note {
+    transform: none;
+}
+
+.note-hitbox.left-facing:hover .note {
+    transform: scale(1.2) translateX(3px)
+}
+
+.cursor {
+    stroke: var(--primary-accent);
+    fill: var(--primary-accent);
+    stroke-width: 10px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+.cursor.select {
+    stroke: var(--select-colour);
+    fill: var(--select-colour);
+}
+
+.cursor.tip {
+    will-change: transform;
+    transform-box: fill-box;
+    transform-origin: center;
+    cursor: pointer;
+    transform: translate(var(--x), var(--y));
+    transition: filter 0.2s ease, fill 0.1s ease;
+}
+
+.cursor.tip:hover {
+    transform: translate(var(--x), var(--y)) scale(1.2);
+}
+
+.cursor.tip:active {
+    transform: translate(var(--x), var(--y)) scale(0.8);
+}
+
+.select-region {
+    fill: color-mix(in srgb, var(--select-colour) 40%, transparent);
+}
+
+.popup-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100dvh;
+    z-index: 299;
+    background-color: transparent;
+}
+
+.add-note-btn-group {
+    cursor: pointer;
+
+    transform-box: fill-box;
+    transform-origin: center;
+
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.add-note-btn-group:hover {
+    transform: scale(1.04);
+}
+
+.add-note-btn-group:active {
+    transform: scale(0.97);
+}
+
+.add-note-button {
+    fill: var(--primary-accent);
+    transition: fill 0.2s ease;
+}

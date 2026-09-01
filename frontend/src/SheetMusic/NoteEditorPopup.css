@@ -1,0 +1,501 @@
+.popover-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    padding-right: 20px;
+    max-height: 510px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 530px;
+}
+
+.popover-inner::-webkit-scrollbar-thumb {
+    background-color: var(--secondary-accent);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.popover-inner::-webkit-scrollbar-track {
+    background: var(--bg-purple);
+    border-radius: 999px;
+}
+
+.popover-inner::-webkit-scrollbar {
+    width: 8px;
+}
+
+.duration-control,
+.voice-control,
+.note-control {
+    height: 60px;
+    width: 100%;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    min-width: 100%;
+}
+
+.duration-control,
+.voice-control {
+    justify-content: space-between;
+}
+
+.note-control svg {
+    width: 20px;
+    height: 20px;
+}
+
+.pitch-control-button,
+.duration-control-button,
+.voice-control-button,
+.clef-control-button,
+.note-control-button,
+.chord-button {
+    height: 100%;
+    font-size: small;
+    color: white;
+    background-color: var(--tertiary-accent);
+    padding: 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    box-shadow: 0 0 20px black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s ease, color 0.3s ease;
+    white-space: nowrap;
+}
+
+.chord-button {
+    width: 100%;
+}
+
+.note-control-button {
+    background-color: white;
+    color: var(--tertiary-text)
+}
+
+.note-control-button:not(:has(svg)) {
+    width: 100%;
+}
+
+.pitch-control-button.disabled,
+.duration-control-button.disabled,
+.voice-control-button.disabled,
+.clef-control-button.disabled,
+.note-control-button.disabled,
+.chord-button.disabled {
+    background-color: var(--tertiary-text);
+    box-shadow: none;
+    cursor: auto;
+}
+
+.pitch-control-button:not(.disabled):hover,
+.duration-control-button:not(.disabled):hover,
+.voice-control-button:not(.disabled):hover,
+.clef-control-button:not(.disabled):hover,
+.note-control-button:not(.disabled):hover,
+.chord-button:not(.disabled):hover {
+    transform: scale(1.1);
+}
+
+.pitch-control-button:not(.disabled):hover,
+.duration-control-button:not(.disabled):hover,
+.voice-control-button:not(.disabled):not(.add-new):hover {
+    transform: scale(1.3)
+}
+
+
+.pitch-control-button:not(.disabled):active,
+.duration-control-button:not(.disabled):active,
+.voice-control-button:not(.disabled):active,
+.clef-control-button:not(.disabled):active,
+.note-control-button:not(.disabled):active,
+.chord-button:not(.disabled):active {
+    transform: scale(0.8);
+}
+
+.pitch-control-button,
+.duration-control-button,
+.voice-control-button:not(.add-new),
+.clef-control-button {
+    border-radius: 999px;
+    aspect-ratio: 1;
+    padding: 10px;
+    height: fit-content;
+}
+
+.voice-control-button.add-new {
+    width: 100%;
+}
+
+.clef-control-button.top {
+    border-radius: 0px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    box-shadow: none;
+}
+
+.clef-control-button.bottom {
+    border-radius: 0px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    box-shadow: none;
+}
+
+.clef-control-button:hover {
+    background-color: var(--tertiary-text);
+}
+
+.voice-clef {
+    display: flex;
+    flex-direction: row;
+    width: fit-content;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 20px;
+}
+
+.clef-list-container {
+    border-radius: 20px;
+    border: 2px solid white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    overflow: hidden;
+    max-height: 40px;
+}
+
+.clef-list {
+    margin-top: -10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 20px;
+    transition: transform 0.3s ease;
+}
+
+.clef-list-control-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+    background-color: var(--tertiary-text);
+}
+
+.duration-adder,
+.time-sig-option {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.duration-adder svg,
+.time-sig-option svg {
+    color: white;
+    width: 20px;
+    height: 20px;
+}
+
+.time-sig-option .time-sig {
+    font-size: 30px;
+    line-height: 1;
+    dominant-baseline: central;
+}
+
+.time-sig-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+}
+
+.duration-container,
+.voice-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.voice-container {
+    margin-top: -20px;
+    font-size: medium;
+    gap: 20px;
+}
+
+.voice-name {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 999px;
+    height: 30px;
+    width: 30px;
+
+}
+
+.duration-options-control {
+    margin: 20px 0px;
+    font-size: medium;
+    display: flex;
+    width: 100%;
+    padding-left: 20px;
+    padding-right: 10px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pitch-option,
+.checkbox {
+    height: 30px;
+    width: 30px;
+    border-radius: 5px;
+    border: solid 2px white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, border 0.2s ease, background-color 0.2s ease;
+}
+
+.pitch-option {
+    height: 50px;
+    width: 50px;
+    font-family: Bravura;
+    font-size: xx-large;
+    aspect-ratio: 1;
+    font-weight: 100;
+}
+
+.pitch-option:hover {
+    transform: scale(1.3);
+}
+
+.checkbox:hover {
+    transform: scale(1.1);
+}
+
+.pitch-option:active,
+.checkbox:active {
+    transform: scale(0.8);
+}
+
+.pitch-option.selected,
+.checkbox.checked {
+    border: none;
+    box-shadow: 0 0 20px black;
+    background-color: white;
+    color: var(--tertiary-text)
+}
+
+.pitch-option.disabled {
+    border-color: var(--tertiary-text);
+    color: var(--tertiary-text);
+    cursor: auto;
+}
+
+.pitch-option.disabled:hover {
+    transform: scale(1);
+}
+
+.pitch-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0px 10px;
+    padding-bottom: 0px;
+    gap: 20px;
+}
+
+.pitch-adder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    height: 115px;
+}
+
+.pitch-options-control {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 10px;
+    height: 115px;
+}
+
+.non-editor-styler {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    gap: 20px;
+    font-size: 16px;
+    line-height: 1.4;
+    padding: 0;
+
+    min-width: 0;
+
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.picture-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.picture-container.trumpet img {
+    background-color: white !important;
+}
+
+.picture-container img {
+    display: block;
+    object-fit: contain;
+    box-shadow: 0 0 15px -5px black !important;
+    border-radius: 10px !important;
+}
+
+.picture-container img.overlay-key {
+    position: absolute;
+    top: 0;
+    left: 0;
+    box-shadow: none;
+    background-color: transparent;
+    pointer-events: none;
+
+    .piano {
+        box-shadow: 0 0 15px -5px black !important;
+    }
+}
+
+.picture-container img .advanced-options-button {
+    display: flex;
+    margin-top: 20px;
+    align-items: center;
+    cursor: pointer;
+    gap: 10px;
+    padding-bottom: 10px;
+    width: 100%;
+    border-bottom: none;
+    position: relative;
+}
+
+/* expanding line  */
+.advanced-options-button::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: white;
+
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 1s ease;
+}
+
+.advanced-options-button.open::after {
+    transform: scaleX(1);
+}
+
+.advanced-options-svg {
+    margin-left: auto;
+    width: 20px;
+    height: 20px;
+}
+
+.advanced-options-button-caret {
+    transform: rotateZ(-90deg);
+    transition: transform 0.5s ease;
+}
+
+.advanced-options-button .advanced-options-button-caret {
+    transform: rotateZ(-90deg);
+}
+
+.advanced-options-button.open .advanced-options-button-caret {
+    transform: rotateZ(0deg);
+}
+
+.chord-button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.advanced-options-container {
+    min-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.advanced-options-wrapper {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 1s ease, height 1s ease;
+    min-width: 100%;
+    height: 0%;
+    overflow: hidden;
+}
+
+/*to open and close advanced options softly*/
+.advanced-options-wrapper.open {
+    height: 100%;
+    grid-template-rows: 1fr;
+}
+
+.advanced-options {
+    min-height: 0;
+    min-width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 20px;
+    overflow: hidden;
+}
+
+.advanced-options.header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding-left: 0px;
+    padding-bottom: 15px;
+    padding-top: 5px;
+    padding-right: 5px;
+}
+
+.snap-to-range-button {
+    padding: 20px;
+    background-color: color-mix(var(--err-colour) 80%, white 20%);
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+    font-size: small;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    border: 3px solid var(--err-colour);
+}
+
+.snap-to-range-button:hover {
+    transform: scale(1.1);
+}
+
+.snap-to-range-button:active {
+    transform: scale(0.8);
+}

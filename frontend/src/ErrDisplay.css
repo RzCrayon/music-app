@@ -1,0 +1,66 @@
+.err-container {
+    width: 100%;
+    padding: 0px 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 0px;
+    font-size: small;
+    font-weight: bold;
+    overflow: hidden;
+    /* background-color: blue; */
+    transition: height 0.5s ease, min-height 0.5s ease;
+}
+
+.err-mssg {
+    color: var(--err-colour);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    font-size: small;
+    font-weight: bold;
+    /*ensure wrapper doesn't collapse during calcs */
+    min-height: max-content;
+    transform: translateX(0%);
+    transition: transform var(--err-transition-dur) ease, color calc(var(--err-transition-dur) + 0.2s) ease;
+}
+
+.err-mssg.warn {
+    color: var(--warning-colour)
+}
+
+.err-msgg.plain {
+    color: var(--tertiary-text);
+}
+
+.err-mssg svg {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+}
+
+.err-mssg.disappear {
+    transform: translateX(-100%);
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: scale(1) translateX(0);
+    }
+
+    15%,
+    45%,
+    75% {
+        transform: scale(1) translateX(-4px);
+    }
+
+    30%,
+    60%,
+    90% {
+        transform: scale(1) translateX(4px);
+    }
+}

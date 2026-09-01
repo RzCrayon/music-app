@@ -1,0 +1,119 @@
+.instrument-picker-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: -60px 0px;
+    margin-bottom: -40px;
+}
+
+.instrument-picker {
+    padding: 20px;
+    color: var(--primary-text);
+    box-sizing: border-box;
+
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    justify-content: safe center;
+    align-items: center;
+}
+
+.instrument-picker::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 20px;
+    background-color: var(--tertiary-accent);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/*need this to restrict size for some rzn*/
+.instrument-picker-shadow {
+    width: 100%;
+    position: relative;
+    border-radius: 20px;
+    box-sizing: border-box;
+    padding-top: 20px;
+}
+
+/*overlay the shadow on top*/
+.instrument-picker-shadow::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    box-shadow: inset 0px 0px 20px black;
+    border-radius: 20px;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.instrument-picker::-webkit-scrollbar {
+    display: none;
+}
+
+.instrument-picker {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.instrument-picker img {
+    width: 120px;
+    aspect-ratio: 1;
+    box-shadow: 0px 0px 20px black;
+    z-index: 2;
+    border-radius: 20px;
+    padding: 20px;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+
+    margin: 0 7.5px;
+}
+
+.instrument-picker img:first-child {
+    margin-left: 15px;
+}
+
+.instrument-picker img:last-child {
+    margin-right: 15px;
+}
+
+.instrument-picker img:hover {
+    transform: scale(1.05);
+    background-color: var(--secondary-accent);
+}
+
+.instrument-picker img:active {
+    transform: scale(0.95);
+}
+
+.instrument-picker img.selected {
+    border: 2px solid var(--primary-text);
+}
+
+.selected-instrument {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px 30px;
+    width: 80%;
+    border-radius: 20px;
+    z-index: 2;
+    background-color: var(--disabled-colour);
+}
+
+.instrument-picker-label {
+    color: var(--primary-text);
+    text-align: center;
+    font-size: large;
+    z-index: 2;
+    position: relative;
+}

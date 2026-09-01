@@ -1,0 +1,6 @@
+.drawer {
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+    background-color: var(--primary-accent);
+    transition: transform 0.6s ease;
+    pointer-events: all;
+}

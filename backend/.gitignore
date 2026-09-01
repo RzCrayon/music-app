@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*.db
+static/uploads/
+static/audio/
+*.log
+*.omr
+.env
+FluidR3_GM.sf2

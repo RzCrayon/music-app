@@ -1,0 +1,95 @@
+.instructions-container.cursor-regions {
+    --moveDistX1: 0;
+    --moveDistY1: 0;
+    --moveDistX2: 0;
+    --moveDistY2: 0;
+    --moveDistX3: 0;
+    --moveDistY3: 0;
+    --animDur: 0s;
+}
+
+@keyframes cursor-float-cursor-regions {
+
+    /* 0.00s */
+    0.00% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    /* 1.50s -> 1.70s: move over to cursor tip */
+    22.06%,
+    25.00% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1)* -1px)) scale(1);
+    }
+
+    /* 1.80s: click on cursor */
+    26.47% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1)* -1px)) scale(0.6);
+    }
+
+    /* 1.90s -> 2.00s: release cursor */
+    27.94%,
+    29.41% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1)* -1px)) scale(1);
+    }
+
+    /* 2.10s: click cursor */
+    30.88% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1)* -1px)) scale(0.6);
+    }
+
+    /* 2.20s -> 2.40s: release cursor */
+    32.35%,
+    35.29% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1)* -1px)) scale(1);
+    }
+
+    /* 3.10s -> 3.30s: move to the select cursor */
+    45.59%,
+    48.53% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2)* -1px)) scale(1);
+    }
+
+    /* 3.40s -> 3.50s: click down */
+    50.00%,
+    51.47% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2)* -1px)) scale(0.6);
+    }
+
+    /* 4.20s -> 4.40s: slide to pos3 */
+    61.76%,
+    64.71% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3)* -1px)) scale(0.6);
+    }
+
+    /* 5.10s -> 5.30s: slide back to pos2 */
+    75.00%,
+    77.94% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2)* -1px)) scale(0.6);
+    }
+
+    /* 5.40s: let go of select cursor */
+    79.41% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2)* -1px)) scale(1);
+    }
+
+    /* 6.20s -> 6.40s: back to origin and chill b4 clicking */
+    91.18%,
+    94.12% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    /* 6.50s: click down */
+    95.59% {
+        transform: translate(0, 0) scale(0.6);
+    }
+
+    /* 6.60s -> 6.80s: release click and wait a sec b4 cycling anim */
+    97.06%,
+    100.00% {
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+.instructions-container.cursor-regions .cursor {
+    animation: cursor-float-cursor-regions var(--animDur) linear infinite;
+}

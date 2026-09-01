@@ -1,0 +1,75 @@
+.instructions-container.cursor-playback {
+    --moveDistX1: 0;
+    --moveDistY1: 0;
+    --moveDistX2: 0;
+    --moveDistY2: 0;
+    --animDur: 0s;
+}
+
+@keyframes cursor-float-cursor-playback {
+
+    /* 0.00s */
+    0.00% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    /* 1.50s -> 1.70s: move over to cursor tip */
+    19.48%,
+    22.08% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1)* -1px)) scale(1);
+    }
+
+    /* 1.80s -> 1.90s: click on cursor */
+    23.38%,
+    24.68% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1)* -1px)) scale(0.6);
+    }
+
+    /* 3.40s -> 3.60s: slide over to pos2 */
+    44.16%,
+    46.75% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2)* -1px)) scale(0.6);
+    }
+
+    /* 3.80s -> 4.00s: lift cursor and chill b4 going back to pos1 */
+    49.35%,
+    51.95% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2)* -1px)) scale(1);
+    }
+
+    /* 5.50s: go back to pos1 */
+    71.43% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1)* -1px)) scale(1);
+    }
+
+    /* 5.60s: click down */
+    72.73% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1)* -1px)) scale(0.6);
+    }
+
+    /* 5.70s: release */
+    74.03% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1)* -1px)) scale(1);
+    }
+
+    /* 5.80s: click down */
+    75.32% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1)* -1px)) scale(0.6);
+    }
+
+    /* 5.90s -> 6.10s: release */
+    76.62%,
+    79.22% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1)* -1px)) scale(1);
+    }
+
+    /* 7.50s -> 7.70s: go back to original pos */
+    97.40%,
+    100.00% {
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+.instructions-container.cursor-playback .cursor {
+    animation: cursor-float-cursor-playback var(--animDur) linear infinite;
+}

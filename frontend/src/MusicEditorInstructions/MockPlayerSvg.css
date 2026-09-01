@@ -1,0 +1,44 @@
+.mock-music-player svg {
+    fill: var(--primary-text);
+}
+
+.mock-music-player line {
+    stroke: var(--primary-text);
+}
+
+.mock-music-player .player-button {
+    scale: 1;
+    transition: scale 0.2s ease;
+    fill: var(--primary-text);
+    transform-origin: center;
+    transform-box: fill-box;
+}
+
+.mock-music-player .player-button.clicked {
+    scale: 0.8
+}
+
+.mock-music-player .player-button.hovered {
+    scale: 1.5
+}
+
+.metronome .player-button.hovered {
+    scale: 1.2;
+}
+
+.mock-music-player .metronome rect {
+    fill: transparent;
+    transition: fill 0.2s ease;
+}
+
+.mock-music-player .metronome.selected rect {
+    fill: var(--primary-text);
+}
+
+.mock-music-player .metronome svg {
+    fill: var(--primary-text);
+}
+
+.mock-music-player .metronome.selected svg {
+    fill: var(--tertiary-accent);
+}

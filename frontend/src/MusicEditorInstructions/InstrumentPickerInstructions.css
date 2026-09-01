@@ -1,0 +1,83 @@
+.instructions-container.instrument-picker-instructions {
+    --moveDistX1: 0;
+    --moveDistY1: 0;
+    --moveDistX2: 0;
+    --moveDistY2: 0;
+    --animDur: 0s;
+}
+
+@keyframes cursor-float-picker {
+
+    /* 0.00s */
+    0.00% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    /* 1.50s -> 1.70s: move to button */
+    28.85%,
+    32.69% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1)* -1px)) scale(1);
+    }
+
+    /* 1.80s: click on cursor */
+    34.62% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1)* -1px)) scale(0.6);
+    }
+
+    /* 1.90s -> 2.00s: release cursor */
+    36.54%,
+    38.46% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1)* -1px)) scale(1);
+    }
+
+    /* 3.00s -> 3.20s: move to trumpet */
+    57.69%,
+    61.54% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2)* -1px)) scale(1);
+    }
+
+    /* 4.70s -> 4.90s: back to origin */
+    90.38%,
+    94.23% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    /* 5.00s: click */
+    96.15% {
+        transform: translate(0, 0) scale(0.6);
+    }
+
+    /* 5.10s -> 5.20s: release */
+    98.08%,
+    100.00% {
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+
+.instructions-container.instrument-picker-instructions .cursor {
+    animation: cursor-float-picker var(--animDur) ease-in-out infinite;
+}
+
+.instructions-container.instrument-picker-instructions .upload-button {
+    fill: var(--primary-text);
+    transform-origin: center;
+    transform-box: fill-box;
+    filter: url(#drop-shadow);
+    position: relative;
+    opacity: 1;
+    scale: 1;
+    transition: scale 0.2s ease, opacity 0.2s ease;
+}
+
+.instructions-container.instrument-picker-instructions .upload-button svg {
+    fill: var(--secondary-text);
+}
+
+.instructions-container.instrument-picker-instructions .upload-button.hovered {
+    scale: 1.1;
+}
+
+.instructions-container.instrument-picker-instructions .upload-button.clicked {
+    scale: 0.8;
+}

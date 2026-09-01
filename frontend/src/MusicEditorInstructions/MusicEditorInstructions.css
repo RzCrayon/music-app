@@ -1,0 +1,227 @@
+.main-container {
+    display: flex;
+    align-items: flex-start;
+    min-width: 260px;
+    width: 75%;
+    max-width: 800px;
+    height: 50%;
+    min-height: 400px;
+    border-radius: 50px;
+    transition: padding 0.2s ease;
+    background-color: color-mix(in srgb, rgb(126, 126, 126) 35%, var(--tertiary-accent) 65%);
+    justify-content: flex-start;
+    overflow: auto;
+    flex-direction: column;
+    padding: 20px;
+    padding-bottom: 30px;
+}
+
+.main-container svg {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.main-container svg:hover {
+    transform: scale(1.5);
+}
+
+.main-container svg:active {
+    transform: scale(0.8);
+}
+
+.main-container .header {
+    width: 100%;
+    padding: 10px;
+    padding-left: 15px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    font-size: larger;
+    border-bottom: 3px solid rgba(255, 255, 255, 0.7);
+}
+
+.main-container .header svg {
+    width: 25px;
+    height: 25px;
+    margin-top: 5px;
+}
+
+.body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 30px;
+}
+
+.open-directory-icon {
+    position: absolute;
+    top: 25px;
+    left: 15px;
+    width: 45px;
+    height: 45px;
+    padding: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+    border-radius: 999px;
+    background-color: color-mix(in srgb, rgb(126, 126, 126) 35%, var(--tertiary-accent) 65%);
+}
+
+.main-container svg.open-directory-icon:hover {
+    transform: scale(1.2);
+}
+
+.main-container svg.open-directory-icon:active {
+    transform: scale(0.8);
+}
+
+.sxns-list-container {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    padding-top: 105px;
+    padding-left: 0px;
+    padding-right: 15px;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    margin-right: 14px;
+}
+
+.sxns-list-container::-webkit-scrollbar-thumb {
+    background-color: var(--primary-accent);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.sxns-list-container::-webkit-scrollbar-track {
+    background: var(--tertiary-text);
+    margin-top: 110px;
+    margin-bottom: 10px;
+    border-radius: 999px;
+}
+
+.sxns-list-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sxns-list-container .header {
+    all: unset;
+    position: absolute;
+    display: flex;
+    justify-content: space-between;
+    background-color: color-mix(in srgb, rgb(126, 126, 126) 35%, var(--tertiary-accent) 65%);
+    box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.3);
+    align-items: center;
+    padding: 20px 8px;
+    gap: 10px;
+    top: 0px;
+    left: 0;
+    right: 0;
+    z-index: 10;
+}
+
+.close-directory-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.search {
+    border-radius: 999px;
+    padding: 0px 5px;
+    width: calc(100% - 30px);
+    border: 2px solid white;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.sxns-list .title {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-bottom: 5px;
+    transition: background-color 0.2s ease;
+}
+
+.sxns-list .title svg {
+    min-width: 25px;
+    min-height: 25px;
+    padding: 5px;
+    rotate: 90deg;
+    border-radius: 999px;
+    transition: rotate 0.2s ease, scale 0.2s ease, background-color 0.2s ease
+}
+
+.sxns-list .title svg {
+    transition: rotate 0.2s ease, scale 0.2s ease;
+}
+
+.sxns-list .title:not(.selected):hover {
+    background-color: var(--primary-accent);
+}
+
+.sxns-list .title.selected {
+    background-color: var(--tertiary-text);
+}
+
+.sxns-list .title:not(.selected):hover svg {
+    scale: 1.5;
+}
+
+.sxns-list .title:not(.selected):active svg {
+    scale: 0.8;
+}
+
+.sxns-list .title.collapsed svg {
+    rotate: 0deg;
+}
+
+.sxns-list .title.contains-selected-sxn {
+    font-weight: bolder;
+}
+
+.sxns-list .title.collapsed.contains-selected-sxn svg {
+    background-color: var(--tertiary-text);
+}
+
+.sxns-list .group {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 0.3s ease, opacity 0.2s ease;
+    opacity: 1;
+}
+
+.sxns-list .group>div {
+    overflow: hidden;
+    min-height: 0;
+}
+
+.sxns-list .group.collapsed {
+    grid-template-rows: 0fr;
+    opacity: 0;
+}
+
+.playback-cursor-tip {
+    scale: 1;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: scale 0.2s ease;
+}
+
+.playback-cursor-tip.inactive {
+    scale: 1;
+}
+
+.playback-cursor-tip.active {
+    scale: 0.8
+}
+
+.playback-cursor-tip.hovered {
+    scale: 1.2;
+}

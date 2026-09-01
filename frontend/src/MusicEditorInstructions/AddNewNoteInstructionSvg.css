@@ -1,0 +1,296 @@
+.instructions-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box;
+
+    --anim-time: 2s;
+    --pause-time: 1s;
+
+}
+
+.description {
+    width: 100%;
+    height: fit-content;
+    margin-top: 10px;
+    white-space: pre-wrap;
+    font-size: medium;
+}
+
+.instructions-container .svg-wrapper {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    display: flex;
+    overflow-y: hidden;
+}
+
+.svg-wrapper svg,
+.svg-wrapper svg:hover,
+.svg-wrapper svg:active {
+    all: unset;
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.instructions-container.add-note-with-no-notes {
+    --moveDistX: 0;
+    --moveDistY: 0;
+}
+
+.instructions-container.add-note-with-notes {
+    --moveDistX1: 0;
+    --moveDistY1: 0;
+    --moveDistX2: 0;
+    --moveDistY2: 0;
+    --moveDistX3: 0;
+    --moveDistY3: 0;
+}
+
+
+/*add note no notes svg stuff*/
+
+@keyframes cursor-float-add-note-with-no-notes {
+
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    40% {
+        transform: translate(calc(var(--moveDistX) * -1px), calc(var(--moveDistY) * -1px)) scale(1);
+    }
+
+    /*click*/
+    50% {
+        transform: translate(calc(var(--moveDistX) * -1px), calc(var(--moveDistY) * -1px)) scale(0.7);
+    }
+
+    /*release click*/
+    60% {
+        transform: translate(calc(var(--moveDistX) * -1px), calc(var(--moveDistY) * -1px)) scale(1);
+    }
+}
+
+
+svg .cursor {
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+svg .mock-note {
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.instructions-container.add-note-with-no-notes .cursor {
+    animation: cursor-float-add-note-with-no-notes var(--anim-time, 3s) ease-in-out infinite;
+}
+
+@keyframes click-button {
+
+    0%,
+    40%,
+    60%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(0.92);
+    }
+}
+
+svg .button.no-notes {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: click-button var(--anim-time, 3s) ease-in-out infinite;
+}
+
+svg .button-text.no-notes {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: click-button var(--anim-time, 3s) ease-in-out infinite;
+}
+
+/*add note with notes svg stuff*/
+
+@keyframes cursor-float-add-note-with-notes {
+
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    /* point 1 */
+    10% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1) * -1px)) scale(1);
+    }
+
+    /* click 1 */
+    14% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1) * -1px)) scale(0.6);
+    }
+
+    /* release 1 */
+    18% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1) * -1px)) scale(1);
+    }
+
+    /* point 2, pause */
+    30%,
+    45% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2) * -1px)) scale(1);
+    }
+
+    /* point 3, pause */
+    60%,
+    72% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3) * -1px)) scale(1);
+    }
+
+    /* back to origin */
+    80% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    /* click 2 (at origin) */
+    84% {
+        transform: translate(0, 0) scale(0.6);
+    }
+
+    /* release 2 */
+    88% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    /* pause at origin before looping */
+    90%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+.instructions-container.add-note-with-notes .cursor {
+    animation: cursor-float-add-note-with-notes 6s ease-in-out infinite;
+}
+
+@keyframes hover-add-left {
+
+    0%,
+    26%,
+    58%,
+    100% {
+        scale: 1;
+    }
+
+    30%,
+    54% {
+        scale: 1.1;
+    }
+}
+
+@keyframes hover-add-right {
+
+    0%,
+    56%,
+    78%,
+    100% {
+        scale: 1;
+    }
+
+    60%,
+    74% {
+        scale: 1.1
+    }
+}
+
+.instructions-container.add-note-with-notes .mock-add-left {
+    animation: hover-add-left 6s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.instructions-container.add-note-with-notes .mock-add-right {
+    animation: hover-add-right 6s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+@keyframes click-note-add-note {
+
+    0%,
+    10% {
+        fill: black;
+        transform: scale(1);
+    }
+
+    /* cursor @ pt 1, hover*/
+    12% {
+        fill: black;
+        transform: scale(1.2);
+    }
+
+    /* cursor clicks */
+    14%,
+    18% {
+        fill: var(--tertiary-accent);
+        transform: scale(1.2);
+    }
+
+    /* cursor release */
+    20%,
+    82% {
+        fill: var(--tertiary-accent);
+        transform: scale(1.2);
+    }
+
+    /* cursor click at origin again*/
+    86% {
+        fill: black;
+        transform: scale(1);
+    }
+
+    100% {
+        fill: black;
+        transform: scale(1);
+    }
+}
+
+.instructions-container.add-note-with-notes .mock-note {
+    animation: click-note-add-note 6s ease-in-out infinite;
+}
+
+@keyframes expand-popup-add-note-with-notes {
+
+    0%,
+    12% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    16%,
+    84% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    88%,
+    100% {
+        opacity: 0;
+        transform: scale(0.5)
+    }
+}
+
+
+.instructions-container.add-note-with-notes .mock-popup-container {
+    transform-box: fill-box;
+    transform-origin: top center;
+    /* opacity: 1;
+    transform: scale(0.5); */
+    animation: expand-popup-add-note-with-notes 6s ease-in-out infinite;
+}

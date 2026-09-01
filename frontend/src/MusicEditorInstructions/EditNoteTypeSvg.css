@@ -1,0 +1,364 @@
+.instructions-container.edit-note-type {
+    --moveDistX1: 0;
+    --moveDistY1: 0;
+    --moveDistX2: 0;
+    --moveDistY2: 0;
+    --moveDistX3: 0;
+    --moveDistY3: 0;
+    --moveDistX4: 0;
+    --moveDistY4: 0;
+    --scrollDist: 0;
+    --animDur: 0s;
+}
+
+@keyframes scroll-screen-edit-note-type {
+
+    /* 0.00s -> 1.90s */
+    0.00%,
+    7.14% {
+        transform: translate(0, 0);
+    }
+
+    /* 5.10s -> 5.40s */
+    19.17%,
+    20.30% {
+        transform: translate(0, calc(var(--scrollDist) * -1px));
+    }
+
+    /* 8.60s -> 9.10s */
+    32.33%,
+    34.21% {
+        transform: translate(0, 0);
+    }
+
+    /* 12.30s -> 14.30s */
+    46.24%,
+    53.76% {
+        transform: translate(0, calc(var(--scrollDist) * -1px));
+    }
+
+    /* 18.00s -> 18.50s */
+    67.67%,
+    69.55% {
+        transform: translate(0, 0);
+    }
+
+    /* 22.20s -> 22.50s */
+    83.46%,
+    84.59% {
+        transform: translate(0, calc(var(--scrollDist) * -1px));
+    }
+
+    /* 26.40s -> 100% */
+    99.25%,
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+.instructions-container.edit-note-type .scroll-group {
+    animation: scroll-screen-edit-note-type var(--animDur) ease-in-out infinite;
+}
+
+@keyframes cursor-float-edit-note-type {
+
+    /* 0.50s */
+    1.88% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    /* 1.50s -> 1.70s: rest before clicking */
+    5.64%,
+    6.39% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1) * -1px)) scale(1);
+    }
+
+    /* 1.80s: click down */
+    6.77% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1) * -1px)) scale(0.6);
+    }
+
+    /* 1.90s: click release */
+    7.14% {
+        transform: translate(calc(var(--moveDistX1) * -1px), calc(var(--moveDistY1) * -1px)) scale(1);
+    }
+
+    /* 5.10s: move to the sharp button */
+    19.17% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2) * -1px)) scale(1)
+    }
+
+    /* 5.20s: click down */
+    19.55% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2) * -1px)) scale(0.6)
+    }
+
+    /* 5.30s -> 5.40s: click release + slight pause b4 going up */
+    19.92%,
+    20.30% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2) * -1px)) scale(1)
+    }
+
+    /* 8.60s -> 9.10s: move back up to point 1 + stay there for 0.5 sec to process what just happened */
+    32.33%,
+    34.21% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    /* 12.30s: move to the sharp button again */
+    46.24% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2) * -1px)) scale(1)
+    }
+
+    /* 12.40s: click down */
+    46.62% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2) * -1px)) scale(0.6)
+    }
+
+    /* 12.50s -> 13.00s: click release + slight pause b4 going to rest */
+    46.99%,
+    48.87% {
+        transform: translate(calc(var(--moveDistX2) * -1px), calc(var(--moveDistY2) * -1px)) scale(1)
+    }
+
+    /* 14.00s: move to the rest button */
+    52.63% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3) * -1px)) scale(1)
+    }
+
+    /* 14.10s: click down */
+    53.01% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3) * -1px)) scale(0.6)
+    }
+
+    /* 14.20s -> 14.30s: click release + slight pause b4 going up */
+    53.38%,
+    53.76% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3) * -1px)) scale(1)
+    }
+
+    /* 18.00s -> 18.50s: move back up + pause to process what just happened */
+    67.67%,
+    69.55% {
+        transform: translate(0, 0) scale(1)
+    }
+
+    /* 22.20s: move back down to rest button */
+    83.46% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3) * -1px)) scale(1)
+    }
+
+    /* 22.30s: click down */
+    83.83% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3) * -1px)) scale(0.6)
+    }
+
+    /* 22.40s -> 22.50s: click release + slight pause b4 going up */
+    84.21%,
+    84.59% {
+        transform: translate(calc(var(--moveDistX3) * -1px), calc(var(--moveDistY3) * -1px)) scale(1)
+    }
+
+    /* 26.20s: move back up */
+    98.50% {
+        transform: translate(0, 0) scale(1)
+    }
+
+    /* 26.30s: click down */
+    98.87% {
+        transform: translate(0, 0) scale(0.6)
+    }
+
+    /* 26.40s -> 26.60s: click release + pause b4 restarting */
+    99.25%,
+    100.00% {
+        transform: translate(0, 0) scale(1)
+    }
+}
+
+.instructions-container.edit-note-type .cursor {
+    animation: cursor-float-edit-note-type var(--animDur) ease-in-out infinite
+}
+
+@keyframes click-note-edit-note-type {
+
+    /* 0.00s -> 1.50s */
+    0.00%,
+    5.64% {
+        fill: black;
+        transform: scale(1);
+    }
+
+    /* 1.60s -> 1.80s */
+    6.02%,
+    6.77% {
+        fill: black;
+        transform: scale(1.2)
+    }
+
+    /* 1.90s -> 26.30s */
+    7.14%,
+    98.87% {
+        fill: var(--tertiary-accent);
+        transform: scale(1.2)
+    }
+
+    /* 26.40s -> 100% */
+    99.25%,
+    100% {
+        fill: black;
+        transform: scale(1);
+    }
+}
+
+.instructions-container.edit-note-type .mock-note {
+    animation: click-note-edit-note-type var(--animDur) ease-in-out infinite;
+}
+
+@keyframes click-sharp-button-edit-note-type {
+
+    /* 0.00s -> 4.80s */
+    0.00%,
+    18.05% {
+        transform: scale(1);
+    }
+
+    /* 5.00s */
+    18.80% {
+        transform: scale(1.2)
+    }
+
+    /* 5.20s: first click */
+    19.55% {
+        transform: scale(1.1)
+    }
+
+    /* 5.40s -> 5.90s */
+    20.30%,
+    22.18% {
+        transform: scale(1.2)
+    }
+
+    /* 6.10s -> 12.10s */
+    22.93%,
+    45.49% {
+        transform: scale(1)
+    }
+
+    /* 12.20s */
+    45.86% {
+        transform: scale(1.2)
+    }
+
+    /* 12.40s: second click */
+    46.62% {
+        transform: scale(1.1)
+    }
+
+    /* 12.60s -> 13.30s */
+    47.37%,
+    50.00% {
+        transform: scale(1.2)
+    }
+
+    /* 13.50s -> 100% */
+    50.75%,
+    100% {
+        transform: scale(1)
+    }
+}
+
+.instructions-container.edit-note-type .mock-sharp {
+    animation: click-sharp-button-edit-note-type var(--animDur) ease-in-out infinite;
+    transform-origin: center;
+    transform-box: fill-box;
+}
+
+@keyframes click-rest-button-edit-note-type {
+
+    /* 0.00s -> 13.70s */
+    0.00%,
+    51.50% {
+        transform: scale(1);
+    }
+
+    /* 13.90s */
+    52.26% {
+        transform: scale(1.2)
+    }
+
+    /* 14.10s: first click */
+    53.01% {
+        transform: scale(1.1)
+    }
+
+    /* 14.30s -> 14.80s */
+    53.76%,
+    55.64% {
+        transform: scale(1.2)
+    }
+
+    /* 15.00s -> 21.90s */
+    56.39%,
+    82.33% {
+        transform: scale(1)
+    }
+
+    /* 22.10s */
+    83.08% {
+        transform: scale(1.2)
+    }
+
+    /* 22.30s: second click */
+    83.83% {
+        transform: scale(1.1)
+    }
+
+    /* 22.50s -> 23.20s */
+    84.59%,
+    87.22% {
+        transform: scale(1.2)
+    }
+
+    /* 23.40s -> 100% */
+    87.97%,
+    100% {
+        transform: scale(1)
+    }
+}
+
+.instructions-container.edit-note-type .mock-rest {
+    animation: click-rest-button-edit-note-type var(--animDur) ease-in-out infinite;
+    transform-origin: center;
+    transform-box: fill-box;
+}
+
+@keyframes expand-popup-edit-note-type {
+
+    /* 0.00s -> 1.60s */
+    0.00%,
+    6.02% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    /* 1.80s -> 26.10s */
+    6.77%,
+    98.12% {
+        transform: scale(1);
+        opacity: 1
+    }
+
+    /* 26.30s -> 26.60s */
+    98.87%,
+    100.00% {
+        transform: scale(0.5);
+        opacity: 0
+    }
+}
+
+.instructions-container.edit-note-type .mock-popup-container {
+    transform-box: fill-box;
+    transform-origin: top center;
+    animation: expand-popup-edit-note-type var(--animDur) ease-in-out infinite;
+}

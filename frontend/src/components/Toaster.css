@@ -1,0 +1,39 @@
+.toaster {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    right: 20px;
+    padding: 0 20px;
+    padding-right: 10px;
+    gap: 10px;
+    width: 500px;
+    border-radius: 10px;
+    box-shadow: 0 0 60px rgb(0, 0, 0);
+    z-index: 999;
+    display: flex;
+    font-size: medium;
+    background-color: var(--err-colour);
+}
+
+.toaster svg {
+    height: 40px;
+    width: 40px;
+    cursor: pointer;
+    transform: scale(1);
+    transition: transform 0.2s ease;
+}
+
+.toaster svg:hover {
+    transform: scale(1.5);
+}
+
+.toaster svg:active {
+    transform: scale(0.5)
+}
+
+.text {
+    width: 100%;
+    overflow: hidden;
+    /*obeys \n*/
+    white-space: pre-wrap;
+}
