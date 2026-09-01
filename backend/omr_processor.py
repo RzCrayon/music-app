@@ -14,7 +14,7 @@ import xml.etree.ElementTree as ET
 from gevent import sleep as gevent_sleep
 import psutil
 
-AUDIVERIS_PATH = r"C:\Program Files\Audiveris\Audiveris.exe"
+AUDIVERIS_PATH = os.getenv("AUDIVERIS_PATH", "/opt/audiveris/bin/Audiveris")
 
 GRID = [0.0, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0]
 
@@ -61,6 +61,8 @@ def run_audiveris(image_path, output_dir, progress_cb = None):
 
     if os.name == 'nt':
         popen_kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+    else:
+        popen_kwargs["preexec_fn"] = os.setsid
 
     process = subprocess.Popen(command, **popen_kwargs)
 

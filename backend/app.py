@@ -127,7 +127,7 @@ def validate_new_user():
 
 
 @app.route('/api/users/new', methods = ['POST'])
-@limiter.limit('100 per hour')
+@limiter.limit('5 per hour')
 def create_user():
     data = request.json
     username = data.get('username')
@@ -812,8 +812,8 @@ def stream_preview_progress(job_id):
 
 #prevents imports of this file later on from running the actual backend server
 if __name__ == '__main__':
-    http_server = WSGIServer(('127.0.0.1', 5000), app)
-    print("Serving on http://127.0.0.1:5000")
+    http_server = WSGIServer(('0.0.0.0', 5000), app)
+    print("Serving on http://0.0.0.0:5000")
 
     try:
         http_server.serve_forever()

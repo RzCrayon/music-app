@@ -1,0 +1,28 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - REDIS_STORAGE_URI=redis://redis:6379/0
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - redis
+    volumes:
+      - ./static:/app/static
+
+  worker:
+    build: .
+    command: celery -A tasks.celery_app worker --loglevel=info -P gevent --concurrency=4
+    environment:
+      - REDIS_STORAGE_URI=redis://redis:6379/0
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - redis
+    volumes:
+      - ./static:/app/static
