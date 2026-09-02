@@ -13,7 +13,7 @@ import LoadingAsset from "./LoadingAsset";
 import ModalDialog, { DeleteWarning } from "./components/ModalDialog";
 import { useToaster } from "./components/Toaster";
 import MusicEditorPlayer, { FINAL_RECORDING_LOADING_STATE } from "./MusicEditorPlayer";
-import { type DashboardSong, type Instruments, type Note, type PlaybackState, type Song, type StateManager } from "./services/types";
+import { type DashboardSong, type Instruments, type Note, type PlaybackState, type Song as SongType, type StateManager } from "./services/types";
 import { emptySongSettings } from "./Terminal";
 import React from "react";
 import { sessionStateManager } from "./services/session_state_manager";
@@ -87,7 +87,7 @@ function Song() {
     const currentUser = location.state?.user || null;
     const currentSongId = location.state?.song_id || null;
 
-    const [currentSong, setCurrentSong] = useState<Song>(emptySongSettings.song);
+    const [currentSong, setCurrentSong] = useState<SongType>(emptySongSettings.song);
     const [cursor, setCursor] = useState(0);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
@@ -115,7 +115,7 @@ function Song() {
             };
 
             const lastPlayedSong = sessionStorage.getItem(sessionStateManager.playingSong);
-            if (lastPlayedSong) setCurrentSong(JSON.parse(lastPlayedSong) as Song);
+            if (lastPlayedSong) setCurrentSong(JSON.parse(lastPlayedSong) as SongType);
             else {
                 setLoading('Fetching Song Data')
                 const startTime = performance.now();

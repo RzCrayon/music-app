@@ -170,8 +170,8 @@ def create_user():
         resp.set_cookie(
             'refresh_token', refresh_token,
             httponly=True,
-            secure=False,       # WHEN WE ARE IN HTTPS WE WILL SET TO TRUE
-            samesite='Strict',
+            secure=True,
+            samesite='None', #bc we're launching on dif domains Netlify and Railway strict wont work but https will still protect 
             max_age=REFRESH_EXP_DAYS * 24 * 60 * 60,
             path='/api/refresh'
         )
@@ -243,8 +243,8 @@ def login_user():
             resp.set_cookie(
                 'refresh_token', refresh_token,
                 httponly=True,
-                secure=False,       # WHEN WE ARE IN HTTPS WE WILL SET TO TRUE
-                samesite='Strict',
+                secure=True,
+                samesite='None',
                 max_age=REFRESH_EXP_DAYS * 24 * 60 * 60,
                 path='/api/refresh'
             )
@@ -266,13 +266,9 @@ def check_login_rate_limit():
         sign_up_remaining = get_secs_left(ip, 'signup', 5)
 
         return jsonify({
-            "sign_up_remaining": -1,
-            "sign_in_remaining": -1,
+            "sign_in_remaining": sign_in_remaining,
+            "sign_up_remaining": sign_up_remaining
         }), 200
-        # return jsonify({
-        #     "sign_in_remaining": sign_in_remaining,
-        #     "sign_up_remaining": sign_up_remaining
-        # }), 200
     except Exception as e:
         return jsonify({"error", str(e)}), 500
 
