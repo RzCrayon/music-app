@@ -48,6 +48,7 @@ CORS(
     supports_credentials=True, 
     origins=CORS_ORIGINS
 )
+print(f"CORS_ORIGINS loaded as: {CORS_ORIGINS}", flush=True)
 
 storage_uri = os.getenv("REDIS_STORAGE_URI")
 redis_client = redis.from_url(storage_uri)
