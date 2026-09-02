@@ -42,7 +42,12 @@ app = Flask(__name__)
 # CORS_ORIGINS is comma seperated so that we can add in the netlify later on
 #for now tho default to http://localhost 
 CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",") if o.strip()]
-CORS(app, expose_headers=['Retry-After'], supports_credentials=True, origins=CORS_ORIGINS)
+CORS(
+    app, 
+    expose_headers=['Retry-After'], 
+    supports_credentials=True, 
+    origins=CORS_ORIGINS
+)
 
 storage_uri = os.getenv("REDIS_STORAGE_URI")
 redis_client = redis.from_url(storage_uri)
@@ -281,16 +286,16 @@ def check_login_rate_limit():
         sign_in_remaining = get_secs_left(ip, 'login', 5)
         sign_up_remaining = get_secs_left(ip, 'signup', 5)
 
-        return jsonify({
-            "sign_up_remaining": -1,
-            "sign_in_remaining": -1,
-        }), 200
         # return jsonify({
-        #     "sign_in_remaining": sign_in_remaining,
-        #     "sign_up_remaining": sign_up_remaining
+        #     "sign_up_remaining": -1,
+        #     "sign_in_remaining": -1,
         # }), 200
+        return jsonify({
+            "sign_in_remaining": sign_in_remaining,
+            "sign_up_remaining": sign_up_remaining
+        }), 200
     except Exception as e:
-        return jsonify({"error", str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 #get the user dashboard
 @app.route('/api/dashboard', methods = ['GET'])
