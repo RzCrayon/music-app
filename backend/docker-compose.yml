@@ -4,6 +4,20 @@ services:
     ports:
       - "6379:6379"
 
+  # Local Postgres for development — mirrors what Railway's Postgres plugin
+  # gives you in production. Run `python init_db.py` once against this
+  # (with DATABASE_URL pointed here) to create the schema.
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=music_app
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-devpassword}
+      - POSTGRES_DB=music_app
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
   web:
     build: .
     ports:
@@ -11,10 +25,16 @@ services:
     environment:
       - REDIS_STORAGE_URI=redis://redis:6379/0
       - JWT_SECRET=${JWT_SECRET}
+      - DATABASE_URL=postgresql://music_app:${POSTGRES_PASSWORD:-devpassword}@postgres:5432/music_app
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173}
+      - PORT=5000
+      - R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
     depends_on:
       - redis
-    volumes:
-      - ./static:/app/static
+      - postgres
 
   worker:
     build: .
@@ -22,7 +42,14 @@ services:
     environment:
       - REDIS_STORAGE_URI=redis://redis:6379/0
       - JWT_SECRET=${JWT_SECRET}
+      - DATABASE_URL=postgresql://music_app:${POSTGRES_PASSWORD:-devpassword}@postgres:5432/music_app
+      - R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
     depends_on:
       - redis
-    volumes:
-      - ./static:/app/static
+      - postgres
+
+volumes:
+  pgdata:

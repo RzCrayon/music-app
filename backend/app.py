@@ -8,16 +8,17 @@ from flask import Flask, Response, request, jsonify
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-import sqlite3
+import psycopg
+from psycopg.rows import dict_row
+from psycopg_pool import ConnectionPool
 import json
 from tasks import celery_app, run_audiveris_omr
 from song_builder import generate_instrument_midi, render_midi_to_audio
 import uuid
 
-from omr_processor import extract_notes
 from image_enhancement import enhance_music
+import r2_storage
 import traceback
-import glob 
 import bcrypt
 import redis
 
@@ -37,25 +38,14 @@ import os
 
 #creates the port 5000 thing
 app = Flask(__name__)
-CORS(app, expose_headers=['Retry-After'], supports_credentials=True, origins=['http://localhost:5173']) 
+
+# CORS_ORIGINS is comma seperated so that we can add in the netlify later on
+#for now tho default to http://localhost 
+CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",") if o.strip()]
+CORS(app, expose_headers=['Retry-After'], supports_credentials=True, origins=CORS_ORIGINS)
 
 storage_uri = os.getenv("REDIS_STORAGE_URI")
 redis_client = redis.from_url(storage_uri)
-
-#the wav, mp3 audio file of the music being played
-#used by the html to play the sound
-#stays permanently in the program so that the user can replay the sound whenever they need
-#public for the website 
-AUDIO_FOLDER = os.path.join('static', 'audio')
-#the user uploaded png/pdf
-#only on the backend
-#temporary and deletes to save space when audiveris finishes reading
-#used for audiveris to read it bc u cant pass in the actual file u need a copy of it basically in a safe location
-#private
-UPLOAD_FOLDER = os.path.join('static', 'uploads')
-
-os.makedirs(AUDIO_FOLDER, exist_ok = True)
-os.makedirs(UPLOAD_FOLDER, exist_ok = True)
 
 #instantiated so that its independent for each ip addr... that sthe get_remote_Address part
 limiter = Limiter(
@@ -87,12 +77,44 @@ def record_attempt(ip: str, key: str, window_seconds: int):
     limiter.storage.incr(bucket, window_seconds)
 
 
+# ---------------------------------------------------------------------------
+# DATABASE (Postgres via psycopg3 + a connection pool)
+# ---------------------------------------------------------------------------
+# Why a pool instead of "connect, do query, close" per request like the
+# sqlite version: opening a fresh TCP connection to Postgres on every single
+# request is expensive and Postgres has a hard cap on concurrent connections
+# (Railway's default plans are usually ~20-100). A pool keeps a small set of
+# connections open and hands them out/returns them per-request instead.
+#
+# row_factory=dict_row makes every fetchone()/fetchall() return dict-like
+# rows (row["username"]) instead of tuples — this mirrors how the sqlite
+# version used `cursor.row_factory = sqlite3.Row` in some routes, just
+# applied consistently everywhere instead of ad hoc per-route.
+#
+# psycopg3 connections used as a context manager auto-COMMIT on clean exit
+# and auto-ROLLBACK if an exception is raised inside the `with` block — so
+# you generally don't need explicit cnxn.commit()/cnxn.close() calls below,
+# the pool + context manager handle it.
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-DB_FILE = 'music_app.db'
-def get_db_cnxn():
-    cnxn = sqlite3.connect(DB_FILE)
-    cnxn.execute("PRAGMA foreign_keys = ON;")
-    return cnxn
+pool = ConnectionPool(
+    DATABASE_URL,
+    min_size=1,
+    max_size=10,
+    kwargs={"row_factory": dict_row, "autocommit": False},
+)
+
+#the wav, mp3 audio file of the music being played
+#used by the html to play the sound
+#the user uploaded png/pdf
+#
+# NOTE: local static folders are no longer used for anything users need
+# to persist. On Railway, web/worker are separate services with separate,
+# ephemeral disks — anything saved to local disk vanishes on redeploy and
+# is invisible to the other service anyway. Uploads and rendered audio now
+# live in a Cloudflare R2 bucket (see r2_storage.py) so both services can
+# reach them and they survive deploys.
+
 
 #create a new account
 @app.route('/api/users/new/validate', methods = ['POST'])
@@ -102,9 +124,6 @@ def validate_new_user():
     #it is safe to retrieve a plain-text password from the frontend...
     #using HTTPS instead of HTTP secures the data on transfer from the frontend to the backend 
     password = data.get('password')
-
-    cnxn = get_db_cnxn()
-    cursor = cnxn.cursor()
 
     if not username or not password: 
         return jsonify({"error": "Username and password are required."}), 400
@@ -118,9 +137,12 @@ def validate_new_user():
             feedback = results['feedback']['warning'] or "Password is too weak or common."
             return jsonify({"error": feedback}), 403
 
-        cursor.execute('SELECT username FROM users WHERE username = ?', (username,))
-        if cursor.fetchone(): return jsonify({"error": "Username already in use."}), 409
-        
+        with pool.connection() as cnxn:
+            with cnxn.cursor() as cursor:
+                cursor.execute('SELECT username FROM users WHERE username = %s', (username,))
+                if cursor.fetchone():
+                    return jsonify({"error": "Username already in use."}), 409
+
         return jsonify({"error": "Account validated."}), 200
     except Exception as e:
         return jsonify({"error": "Failed to validate account."}), 500
@@ -138,26 +160,26 @@ def create_user():
     ip = get_remote_address()
     record_attempt(ip, 'signup', 3600)
 
-    #encode converts the plaintext to bytes so it can be hashed, decode converts the hash to a string for sqlite
+    #encode converts the plaintext to bytes so it can be hashed, decode converts the hash to a string for postgres
     password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    
-    cnxn = get_db_cnxn()
-    cursor = cnxn.cursor()
 
     user_id = str(uuid.uuid4())
 
     try:
         #one value in a tuple needs a comma to make a tuple
 
-        #these ?'s protect against sql injection 
+        #these %s's protect against sql injection
         #because alternatively we could've done smth like "SELECT * FROM users WHERE username = '{username}'"
-        #and then if someone typed in ' OR '1'='1 as their username it would become 
+        #and then if someone typed in ' OR '1'='1 as their username it would become
         #"SELECT * FROM users WHERE username = '' OR '1' = '1'"
         #which would return all the users
-        #the ?'s means the driver sents the query and the data seperately
-
-        cursor.execute("INSERT INTO users (id, username, password_hash) VALUES (?, ?, ?)", (user_id, username,password_hash))
-        cnxn.commit()
+        #the %s's means the driver sends the query and the data separately
+        with pool.connection() as cnxn:
+            with cnxn.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO users (id, username, password_hash) VALUES (%s, %s, %s)",
+                    (user_id, username, password_hash)
+                )
 
         access_token = generate_access_token(user_id, username)
         refresh_token = generate_refresh_token(user_id)
@@ -170,18 +192,18 @@ def create_user():
         resp.set_cookie(
             'refresh_token', refresh_token,
             httponly=True,
-            secure=True,
-            samesite='None', #bc we're launching on dif domains Netlify and Railway strict wont work but https will still protect 
+            secure=True,         # Railway serves HTTPS by default
+            samesite='None',     # required for cross-site cookies (Netlify <-> Railway are different domains)
             max_age=REFRESH_EXP_DAYS * 24 * 60 * 60,
             path='/api/refresh'
         )
 
         return resp, 201
-    except sqlite3.Error as e:
+    except psycopg.errors.UniqueViolation:
+        return jsonify({"error": "Username already in use."}), 409
+    except psycopg.Error as e:
         print(e)
         return jsonify({"error": str(e)}), 500
-    finally:
-        cnxn.close()
 
 #verify user exists by their username
 @app.route('/api/users/login', methods = ['POST'])
@@ -196,79 +218,77 @@ def login_user():
     #60 for per minute
     record_attempt(ip, 'login', 60)
 
-    cnxn = get_db_cnxn()
-    cursor = cnxn.cursor() 
+    try:
+        with pool.connection() as cnxn:
+            with cnxn.cursor() as cursor:
+                cursor.execute("SELECT id, username, password_hash FROM users WHERE username = %s", (username,))
+                userData = cursor.fetchone()
 
-    try: 
-        cursor.execute("SELECT id, username, password_hash FROM users WHERE username = ?", (username,))
-        userData = cursor.fetchone()
+                #second condition checks to see if the typed password matches the encoded password
+                if userData and bcrypt.checkpw(password.encode('utf-8'), userData["password_hash"].encode('utf-8')):
 
-        #second condition checks to see if the typed password matches the encoded password
-        if userData and bcrypt.checkpw(password.encode('utf-8'), userData[2].encode('utf-8')):
+                    user_id = userData["id"]
 
-            user_id = userData[0]
+                    access_token = generate_access_token(user_id, userData["username"])
+                    refresh_token = generate_refresh_token(user_id)
 
-            access_token = generate_access_token(user_id, userData[1])
-            refresh_token = generate_refresh_token(user_id)
+                    cursor.execute("""
+                        SELECT
+                            song.id,
+                            song.title,
+                            song.instrument
+                        FROM songs song 
+                        WHERE song.user_id = %s
+                        GROUP BY song.id
+                    """, (user_id,))
 
-            cursor.row_factory = sqlite3.Row
-            cursor.execute("""
-                SELECT
-                    song.id,
-                    song.title,
-                    song.instrument
-                FROM songs song 
-                WHERE song.user_id = ?
-                GROUP BY song.id
-            """, (user_id,))
-        
-            #here we using fetchall instead of fetchone bc fetchone works on one song, whereas fetchall works on the list of songs
-            rows = cursor.fetchall()
+                    #here we using fetchall instead of fetchone bc fetchone works on one song, whereas fetchall works on the list of songs
+                    rows = cursor.fetchall()
 
-            songs_list = []
-            for row in rows:
-                songs_list.append({
-                    "song_id": row["id"],
-                    "title": row["title"],
-                    "instrument": row['instrument']
-                })
+                    songs_list = []
+                    for row in rows:
+                        songs_list.append({
+                            "song_id": row["id"],
+                            "title": row["title"],
+                            "instrument": row["instrument"]
+                        })
 
+                    resp = jsonify({
+                            "token": access_token,
+                            "username": userData["username"],
+                            "songs": songs_list,
+                            "message": f"Sign in successful. Welcome {userData['username']}."
+                        })
+                    resp.set_cookie(
+                        'refresh_token', refresh_token,
+                        httponly=True,
+                        secure=True,
+                        samesite='None',
+                        max_age=REFRESH_EXP_DAYS * 24 * 60 * 60,
+                        path='/api/refresh'
+                    )
 
-            resp = jsonify({
-                    "token": access_token,
-                    "username": userData[1],
-                    "songs": songs_list,
-                    "message": f"Sign in successful. Welcome {userData[1]}."
-                })
-            resp.set_cookie(
-                'refresh_token', refresh_token,
-                httponly=True,
-                secure=True,
-                samesite='None',
-                max_age=REFRESH_EXP_DAYS * 24 * 60 * 60,
-                path='/api/refresh'
-            )
-
-            return resp, 200
-        else: 
-            return jsonify({"error": "Login failed: ACCOUNT NOT FOUND."}), 404
-    except sqlite3.Error as e:
+                    return resp, 200
+                else:
+                    return jsonify({"error": "Login failed: ACCOUNT NOT FOUND."}), 404
+    except psycopg.Error as e:
         return jsonify({"error": str(e)}), 500
-    finally:
-        cnxn.close()
 
 @app.route('/api/users/login/status', methods = ['GET'])
 def check_login_rate_limit():
     try:
-
         ip = get_remote_address()
         sign_in_remaining = get_secs_left(ip, 'login', 5)
         sign_up_remaining = get_secs_left(ip, 'signup', 5)
 
         return jsonify({
-            "sign_in_remaining": sign_in_remaining,
-            "sign_up_remaining": sign_up_remaining
+            "sign_up_remaining": -1,
+            "sign_in_remaining": -1,
         }), 200
+        # return jsonify({
+        #     "sign_in_remaining": sign_in_remaining,
+        #     "sign_up_remaining": sign_up_remaining
+        # }), 200
     except Exception as e:
         return jsonify({"error", str(e)}), 500
 
@@ -279,188 +299,188 @@ def get_user_dashboard():
 
     user_id = request.user_id
 
-    cnxn = get_db_cnxn()
-    cursor = cnxn.cursor()
-    cursor.row_factory = sqlite3.Row #this lets u see the as best_score stuff
-
     try:
-        #we use left join because it guarantees we get everything from the thing on the left 
-        #(songs) even if there's no attempt that matches the song_id
-        #the alternative is INNER JOIN where we join from the practice_history table
+        with pool.connection() as cnxn:
+            with cnxn.cursor() as cursor:
+                #we use left join because it guarantees we get everything from the thing on the left
+                #(songs) even if there's no attempt that matches the song_id
+                #the alternative is INNER JOIN where we join from the practice_history table
 
-        #if u say just join and youve practiced a song 20 times itll create 20 rows of data for a single song
-        #but we do group by so that all the data is grouped by song.id
+                #if u say just join and youve practiced a song 20 times itll create 20 rows of data for a single song
+                #but we do group by so that all the data is grouped by song.id
 
-        #needs that as whenever we use max and count 
+                #needs that as whenever we use max and count
 
-        #ROW_NUMBER() OVER (PARTITION BY song_id ORDER BY date_played DESC) as recency_rank
-        #group the practice_history by song, then look at the timestamps and give the newest rank #1 (the DESC part)
+                #ROW_NUMBER() OVER (PARTITION BY song_id ORDER BY date_played DESC) as recency_rank
+                #group the practice_history by song, then look at the timestamps and give the newest rank #1 (the DESC part)
 
-        #you could just do recent_avgs.mastery as mastery but if no attempts mastery will be NULL
-        #COALESCE is just so it gets set to 0 in that case
-        cursor.execute("""
-            SELECT
-                song.id,
-                song.title,
-                song.instrument
-            FROM songs song 
-            WHERE song.user_id = ?
-        """, (user_id,))
-    
-        #here we using fetchall instead of fetchone bc fetchone works on one song, whereas fetchall works on the list of songs
-        rows = cursor.fetchall()
+                #you could just do recent_avgs.mastery as mastery but if no attempts mastery will be NULL
+                #COALESCE is just so it gets set to 0 in that case
+                cursor.execute("""
+                    SELECT
+                        song.id,
+                        song.title,
+                        song.instrument
+                    FROM songs song 
+                    WHERE song.user_id = %s
+                """, (user_id,))
 
-        songs_list = []
-        for row in rows:
-            songs_list.append({
-                "song_id": row["id"],
-                "title": row["title"],
-                "instrument": row['instrument']
-            })
+                #here we using fetchall instead of fetchone bc fetchone works on one song, whereas fetchall works on the list of songs
+                rows = cursor.fetchall()
 
-        return jsonify({"songs": songs_list}), 200
-    except sqlite3.Error as e:
+                songs_list = []
+                for row in rows:
+                    songs_list.append({
+                        "song_id": row["id"],
+                        "title": row["title"],
+                        "instrument": row["instrument"]
+                    })
+
+                return jsonify({"songs": songs_list}), 200
+    except psycopg.Error as e:
         return jsonify({"error": str(e)}), 500
-    finally:
-        cnxn.close()
 
 @app.route('/api/attempts/<int:song_id>', methods=['GET'])
 @token_required
 def get_all_attempts(song_id):
-    cnxn = get_db_cnxn()
-    cnxn.row_factory = sqlite3.Row
-    cursor = cnxn.cursor()
-
     try:
+        with pool.connection() as cnxn:
+            with cnxn.cursor() as cursor:
 
-        #security check to make sure that the passed in song id belongs to the tokened user
-        cursor.execute("SELECT user_id FROM songs WHERE id = ?", (song_id,))
-        song = cursor.fetchone()
-        if not song:
-            return jsonify({"error": "Song not found."}), 404
-        if song["user_id"] != request.user_id:
-            return jsonify({"error": "Forbidden."}), 403
+                #security check to make sure that the passed in song id belongs to the tokened user
+                cursor.execute("SELECT user_id FROM songs WHERE id = %s", (song_id,))
+                song = cursor.fetchone()
+                if not song:
+                    return jsonify({"error": "Song not found."}), 404
+                if song["user_id"] != request.user_id:
+                    return jsonify({"error": "Forbidden."}), 403
 
-        cursor.execute("""
-            WITH ChronologicalAttempts AS (
-                SELECT 
-                    id,
-                    song_id,
-                    score,
-                    date_played,
-                    -- Dynamically number attempts chronologically (1, 2, 3...)
-                    ROW_NUMBER() OVER (PARTITION BY song_id ORDER BY date_played ASC, id ASC) as attempt_num
-                FROM practice_history
-                WHERE song_id = ?
-            )
-            SELECT 
-                id,
-                song_id,
-                score,
-                date_played,
-                attempt_num
-            FROM ChronologicalAttempts
-            ORDER BY date_played DESC
-        """, (song_id,))
-        
-        rows = cursor.fetchall()
+                cursor.execute("""
+                    WITH ChronologicalAttempts AS (
+                        SELECT 
+                            id,
+                            song_id,
+                            score,
+                            date_played,
+                            -- Dynamically number attempts chronologically (1, 2, 3...)
+                            ROW_NUMBER() OVER (PARTITION BY song_id ORDER BY date_played ASC, id ASC) as attempt_num
+                        FROM practice_history
+                        WHERE song_id = %s
+                    )
+                    SELECT 
+                        id,
+                        song_id,
+                        score,
+                        date_played,
+                        attempt_num
+                    FROM ChronologicalAttempts
+                    ORDER BY date_played DESC
+                """, (song_id,))
 
-        # Convert sqlite3.Row objects into standard Python dictionaries for JSON
-        attempts = [dict(row) for row in rows]
+                rows = cursor.fetchall()
 
-        return jsonify({
-            "attempts": attempts
-        }), 200
+                # dict_row already gives us plain dicts, so no conversion needed
+                # (the sqlite version had to do `[dict(row) for row in rows]`
+                # to get out of sqlite3.Row objects — dict_row skips that step).
+                attempts = [dict(row) for row in rows]
+
+                return jsonify({
+                    "attempts": attempts
+                }), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    finally:
-        cnxn.close()
 
 
 @app.route('/api/songs/<int:song_id>', methods = ['POST'])
 @token_required
 def get_song(song_id): 
-    cnxn = get_db_cnxn()
-    cursor = cnxn.cursor()
-    cursor.row_factory = sqlite3.Row
-
     try:
+        with pool.connection() as cnxn:
+            with cnxn.cursor() as cursor:
 
-        cursor.execute("""
-            WITH ChronologicalAttempts AS (
-                SELECT 
-                    id,
-                    song_id,
-                    score,
-                    date_played,
-                    -- Dynamically calculates attempt # (1st attempt, 2nd attempt, etc.)
-                    ROW_NUMBER() OVER (PARTITION BY song_id ORDER BY date_played ASC, id ASC) as attempt_num
-                FROM practice_history
-                WHERE song_id = ?
-            )
-            SELECT
-                song.id,
-                song.title,
-                song.notes_json,
-                song.audio_url,
-                song.instrument,
-                song.user_id,
-                best.id as best_id,
-                best.score as best_score,
-                best.attempt_num as best_attempt_num,
-                best.date_played as best_attempt_date,
-                (SELECT COUNT(*) FROM practice_history WHERE song_id = song.id) as total_attempts
-            FROM songs song
-            LEFT JOIN (
-                SELECT id, song_id, score, attempt_num, date_played
-                FROM ChronologicalAttempts
-                ORDER BY score DESC, date_played DESC
-                LIMIT 1
-            ) best ON song.id = best.song_id
-            WHERE song.id = ?
-        """, (song_id, song_id))
+                cursor.execute("""
+                    WITH ChronologicalAttempts AS (
+                        SELECT 
+                            id,
+                            song_id,
+                            score,
+                            date_played,
+                            -- Dynamically calculates attempt # (1st attempt, 2nd attempt, etc.)
+                            ROW_NUMBER() OVER (PARTITION BY song_id ORDER BY date_played ASC, id ASC) as attempt_num
+                        FROM practice_history
+                        WHERE song_id = %s
+                    )
+                    SELECT
+                        song.id,
+                        song.title,
+                        song.notes_json,
+                        song.audio_url,
+                        song.instrument,
+                        song.user_id,
+                        best.id as best_id,
+                        best.score as best_score,
+                        best.attempt_num as best_attempt_num,
+                        best.date_played as best_attempt_date,
+                        (SELECT COUNT(*) FROM practice_history WHERE song_id = song.id) as total_attempts
+                    FROM songs song
+                    LEFT JOIN (
+                        SELECT id, song_id, score, attempt_num, date_played
+                        FROM ChronologicalAttempts
+                        ORDER BY score DESC, date_played DESC
+                        LIMIT 1
+                    ) best ON song.id = best.song_id
+                    WHERE song.id = %s
+                """, (song_id, song_id))
 
-        song = cursor.fetchone()
+                song = cursor.fetchone()
 
-        if not song:
-            return jsonify({"error": "Song not found."}), 404
-        if song["user_id"] != request.user_id:
-            return jsonify({"error": "Forbidden."}), 403
+                if not song:
+                    return jsonify({"error": "Song not found."}), 404
+                if song["user_id"] != request.user_id:
+                    return jsonify({"error": "Forbidden."}), 403
 
-        notes_data = json.loads(song["notes_json"])
-        if not notes_data:
-            return jsonify({"error": "Song note data was found compromised."}), 422 #Unprocessable Entity status code 
+                notes_data = json.loads(song["notes_json"])
+                if not notes_data:
+                    return jsonify({"error": "Song note data was found compromised."}), 422 #Unprocessable Entity status code
 
-        high_score = {
-            'score': None, 
-            'attempt_num': None,
-            'date': None,
-            'id': None
-        }
-        if song['best_score'] is not None:
-            high_score = {
-                "score": song['best_score'], 
-                "attempt_num": song['best_attempt_num'], 
-                "date": song['best_attempt_date'], 
-                "id": song['best_id']
-            }
+                high_score = {
+                    'score': None, 
+                    'attempt_num': None,
+                    'date': None,
+                    'id': None
+                }
+                if song['best_score'] is not None:
+                    high_score = {
+                        "score": song['best_score'], 
+                        "attempt_num": song['best_attempt_num'], 
+                        "date": song['best_attempt_date'], 
+                        "id": song['best_id']
+                    }
 
-        return jsonify({"song" : {
-            "song_id": song["id"],
-            "title": song["title"],
-            "audio_url": song["audio_url"],
-            "notes": notes_data,
-            "instrument": song["instrument"],
-            "highScore": high_score,
-            "total_attempts": song["total_attempts"],
-        }}), 200
+                # audio_url in the DB now stores an R2 object *key*
+                # (e.g. "audio/<uuid>.mp3"), not a public URL — the bucket
+                # stays private and we hand back a short-lived signed URL
+                # instead. If a song has no audio yet, audio_url is empty
+                # and we just pass that through.
+                signed_audio_url = (
+                    r2_storage.generate_presigned_url(song["audio_url"])
+                    if song["audio_url"] else ""
+                )
 
-    except sqlite3.Error as sqlite_err:
+                return jsonify({"song" : {
+                    "song_id": song["id"],
+                    "title": song["title"],
+                    "audio_url": signed_audio_url,
+                    "notes": notes_data,
+                    "instrument": song["instrument"],
+                    "highScore": high_score,
+                    "total_attempts": song["total_attempts"],
+                }}), 200
+
+    except psycopg.Error as sqlite_err:
         print(f"Database err {sqlite_err}")
         return jsonify({"error": str(sqlite_err)}), 500
-    finally:
-        cnxn.close()
 
 @app.route('/api/songs/<int:song_id>', methods = ['DELETE'])
 @token_required
@@ -469,60 +489,54 @@ def delete_song(song_id):
     data = request.json
     song_id = data.get('song_id')
 
-    cnxn = get_db_cnxn()
-    cnxn.row_factory = sqlite3.Row
-    cursor = cnxn.cursor()
-    
     try:
-    
-        cursor.execute("SELECT user_id from songs WHERE id = ?", (song_id,))
-        song = cursor.fetchone()
+        with pool.connection() as cnxn:
+            with cnxn.cursor() as cursor:
 
-        if not song:
-            return jsonify({"error": "Song not found."}), 404
-        if song["user_id"] != request.user_id:
-            return jsonify({"error": "Forbidden."}), 403
-            
-        cursor.execute("DELETE FROM songs WHERE id = ?", (song_id,))
-        cnxn.commit()
+                cursor.execute("SELECT user_id, audio_url FROM songs WHERE id = %s", (song_id,))
+                song = cursor.fetchone()
 
-        return jsonify({"message": "Song successfully deleted."}), 200
-    except sqlite3.Error as sqlite_err:
+                if not song:
+                    return jsonify({"error": "Song not found."}), 404
+                if song["user_id"] != request.user_id:
+                    return jsonify({"error": "Forbidden."}), 403
+
+                cursor.execute("DELETE FROM songs WHERE id = %s", (song_id,))
+
+                # clean up the rendered audio in R2 too, otherwise you're
+                # paying for orphaned objects nothing points to anymore
+                if song["audio_url"]:
+                    r2_storage.delete_object(song["audio_url"])
+
+                return jsonify({"message": "Song successfully deleted."}), 200
+    except psycopg.Error as sqlite_err:
         print(f"Database err {sqlite_err}")
         return jsonify({"error": str(sqlite_err)}), 500
-    finally:
-        cnxn.close()
 
 @app.route('/api/attempts/<int:attempt_id>', methods=['DELETE'])
 @token_required
 def delete_attempt(attempt_id):
-    cnxn = get_db_cnxn()
-    cnxn.row_factory = sqlite3.Row
-    cursor = cnxn.cursor()
-    
     try:
+        with pool.connection() as cnxn:
+            with cnxn.cursor() as cursor:
 
-        cursor.execute("""
-            SELECT songs.user_id FROM practice_history
-            JOIN songs ON songs.id = practice_history.song_id
-            WHERE practice_history.id = ?
-        """, (attempt_id,))
-        row = cursor.fetchone()
-        if not row:
-            return jsonify({"error": "Attempt not found."}), 404
-        if row["user_id"] != request.user_id:
-            return jsonify({"error": "Forbidden."}), 403
+                cursor.execute("""
+                    SELECT songs.user_id FROM practice_history
+                    JOIN songs ON songs.id = practice_history.song_id
+                    WHERE practice_history.id = %s
+                """, (attempt_id,))
+                row = cursor.fetchone()
+                if not row:
+                    return jsonify({"error": "Attempt not found."}), 404
+                if row["user_id"] != request.user_id:
+                    return jsonify({"error": "Forbidden."}), 403
 
-        cursor.execute("DELETE FROM practice_history WHERE id = ?", (attempt_id,))
-        cnxn.commit()
-        return jsonify({"message": "Attempt successfully deleted."}), 200
+                cursor.execute("DELETE FROM practice_history WHERE id = %s", (attempt_id,))
+                return jsonify({"message": "Attempt successfully deleted."}), 200
 
-    except sqlite3.Error as sqlite_err:
-        cnxn.rollback()
+    except psycopg.Error as sqlite_err:
         print(f"Database error: {sqlite_err}")
         return jsonify({"error": str(sqlite_err)}), 500
-    finally:
-        cnxn.close()
 
 
 ALLOWED_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.webp'}
@@ -556,18 +570,23 @@ def enqueue_preview():
 
     unique_id = str(uuid.uuid4())
     ext = os.path.splitext(uploaded_file.filename)[1]
-    temp_img_path = os.path.join(UPLOAD_FOLDER, f"{unique_id}{ext}")
-    uploaded_file.save(temp_img_path)
 
-    # Trigger background Celery task
+    # stream the upload straight to r2 bc railway and netlify r seperate services 
+    r2_key = f"uploads/{unique_id}{ext}"
+    try:
+        r2_storage.upload_fileobj(uploaded_file, r2_key, content_type=uploaded_file.mimetype)
+    except Exception as e:
+        print(f"[R2] Upload failed: {e}")
+        return jsonify({"error": "Failed to store uploaded file."}), 500
+
+    # pass the r2_key
     print('Triggered audiveris')
-    task = run_audiveris_omr.delay(temp_img_path)
+    task = run_audiveris_omr.delay(r2_key)
 
-    # Immediately return job_id to the frontend
     return jsonify({
         "job_id": task.id,
         "status": "PROCESSING",
-        "suggested_title": os.path.basename(uploaded_file.filename).rsplit('.', 1)[0].replace('_', ' ').title()
+        "suggested_title": title
     }), 202
 
 # POLL TASK STATUS
@@ -611,20 +630,18 @@ def create_song():
     extracted_notes = data.get('notes')
     instrument = data.get('instrument')
 
-
-    cnxn = get_db_cnxn()
-    cursor = cnxn.cursor()
-
     try:
-
         print("attempting to add song")
 
-        cursor.execute(
-            "INSERT INTO songs (user_id, title, notes_json, audio_url, instrument) VALUES (?, ?, ?, ?, ?)", 
-            (user_id, title, json.dumps(extracted_notes), '', instrument)
-        )
-        song_id = cursor.lastrowid
-        cnxn.commit()
+        with pool.connection() as cnxn:
+            with cnxn.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO songs (user_id, title, notes_json, audio_url, instrument) VALUES (%s, %s, %s, %s, %s) RETURNING id",
+                    (user_id, title, json.dumps(extracted_notes), '', instrument)
+                )
+                # Postgres has no cursor.lastrowid like sqlite — RETURNING id
+                # + fetchone() is the idiomatic way to get the new row's id back.
+                song_id = cursor.fetchone()["id"]
 
         return jsonify({
             "song_id": song_id, 
@@ -632,10 +649,8 @@ def create_song():
             "extracted_notes": extracted_notes,
             "message": f"{title} successfully added to your dashboard."
         }), 201
-    except sqlite3.Error as sqlite_err:
+    except psycopg.Error as sqlite_err:
         return jsonify({"error": str(sqlite_err)}), 500
-    finally:
-        cnxn.close()
 
 @app.route('/api/score', methods = ['POST'])
 @token_required
@@ -644,68 +659,64 @@ def create_song_data_entry():
     song_id = data.get('song_id')
     score = data.get('score')
 
-    cnxn = get_db_cnxn()
-    cnxn.row_factory = sqlite3.Row
-    cursor = cnxn.cursor()
-
     try:
+        with pool.connection() as cnxn:
+            with cnxn.cursor() as cursor:
 
-        #security check to make sure that the passed in song id belongs to the tokened user
-        cursor.execute("SELECT user_id FROM songs WHERE id = ?", (song_id,))
-        song = cursor.fetchone()
-        if not song:
-            return jsonify({"error": "Song not found."}), 404
-        if song["user_id"] != request.user_id:
-            return jsonify({"error": "Forbidden."}), 403
+                #security check to make sure that the passed in song id belongs to the tokened user
+                cursor.execute("SELECT user_id FROM songs WHERE id = %s", (song_id,))
+                song = cursor.fetchone()
+                if not song:
+                    return jsonify({"error": "Song not found."}), 404
+                if song["user_id"] != request.user_id:
+                    return jsonify({"error": "Forbidden."}), 403
 
-        cursor.execute(
-            "INSERT INTO practice_history (song_id, score) VALUES (?, ?)", 
-            (song_id, score)
-        )
-        entry_id = cursor.lastrowid
-        cnxn.commit()
+                cursor.execute(
+                    "INSERT INTO practice_history (song_id, score) VALUES (%s, %s) RETURNING id",
+                    (song_id, score)
+                )
+                entry_id = cursor.fetchone()["id"]
 
-        # Grab stats: high score, high score date, attempt # of high score, and total attempts
-        cursor.execute("""
-            WITH ChronologicalAttempts AS (
-                SELECT 
-                    id,
-                    song_id,
-                    score,
-                    date_played,
-                    -- Number attempts chronologically (1st, 2nd, 3rd, etc.)
-                    ROW_NUMBER() OVER (PARTITION BY song_id ORDER BY date_played ASC, id ASC) as attempt_num,
-                    -- Total attempts count
-                    COUNT(*) OVER (PARTITION BY song_id) as total_attempts
-                FROM practice_history
-                WHERE song_id = ?
-            )
-            SELECT
-                score as best_score,
-                date_played as best_attempt_date,
-                attempt_num as best_attempt_num,
-                id as best_attempt_id,
-                total_attempts
-            FROM ChronologicalAttempts
-            ORDER BY score DESC, date_played DESC
-            LIMIT 1
-        """, (song_id,))
-        
-        stats = cursor.fetchone()
+                # Grab stats: high score, high score date, attempt # of high score, and total attempts
+                cursor.execute("""
+                    WITH ChronologicalAttempts AS (
+                        SELECT 
+                            id,
+                            song_id,
+                            score,
+                            date_played,
+                            -- Number attempts chronologically (1st, 2nd, 3rd, etc.)
+                            ROW_NUMBER() OVER (PARTITION BY song_id ORDER BY date_played ASC, id ASC) as attempt_num,
+                            -- Total attempts count
+                            COUNT(*) OVER (PARTITION BY song_id) as total_attempts
+                        FROM practice_history
+                        WHERE song_id = %s
+                    )
+                    SELECT
+                        score as best_score,
+                        date_played as best_attempt_date,
+                        attempt_num as best_attempt_num,
+                        id as best_attempt_id,
+                        total_attempts
+                    FROM ChronologicalAttempts
+                    ORDER BY score DESC, date_played DESC
+                    LIMIT 1
+                """, (song_id,))
 
-        return jsonify({
-            "entry_id": entry_id,
-            "highScore": {
-                "score": stats["best_score"],
-                "date": stats["best_attempt_date"],
-                "attempt_num": stats["best_attempt_num"], 
-                "id": stats["best_attempt_id"]
-            },
-            "total_attempts": stats["total_attempts"]
-        }), 200
+                stats = cursor.fetchone()
+
+                return jsonify({
+                    "entry_id": entry_id,
+                    "highScore": {
+                        "score": stats["best_score"],
+                        "date": stats["best_attempt_date"],
+                        "attempt_num": stats["best_attempt_num"], 
+                        "id": stats["best_attempt_id"]
+                    },
+                    "total_attempts": stats["total_attempts"]
+                }), 200
 
     except Exception as e:
-        cnxn.rollback()
         return jsonify({"error": str(e)}), 500
 
 #when our refresh token has expired 
@@ -723,20 +734,18 @@ def refresh():
     except jwt.InvalidTokenError:
         return jsonify({"error": "Invalid refresh token."}), 401
 
-    cnxn = get_db_cnxn()
-    cursor = cnxn.cursor()
     try:
-        cursor.execute("SELECT username FROM users WHERE id = ?", (payload['user_id'],))
-        row = cursor.fetchone()
-        if not row:
-            return jsonify({"error": "User no longer exists."}), 401
+        with pool.connection() as cnxn:
+            with cnxn.cursor() as cursor:
+                cursor.execute("SELECT username FROM users WHERE id = %s", (payload['user_id'],))
+                row = cursor.fetchone()
+                if not row:
+                    return jsonify({"error": "User no longer exists."}), 401
 
-        new_access = generate_access_token(payload['user_id'], row[0])
-        return jsonify({"token": new_access}), 200
-    except sqlite3.Error as e:
+                new_access = generate_access_token(payload['user_id'], row["username"])
+                return jsonify({"token": new_access}), 200
+    except psycopg.Error as e:
         return jsonify({"error": str(e)}), 500
-    finally:
-        cnxn.close()
 
 #need the logout endpoint because if we just refreshed the cookie when we login a new user 
 #if someone logs out but no one new logs in that cookie remains in the build and can be exploited
@@ -781,35 +790,14 @@ def stream_preview_progress(job_id):
 
     return Response(event_stream(), mimetype='text/event-stream')
 
-# def audio_cleanup(audio_url):
-#     if audio_url:
-#         file_path = audio_url.lstrip('/')
-#         metronome_path = file_path.replace('.mp3', '_metronome.mp3')
-#         if os.path.exists(file_path):
-#             os.remove(file_path)
-#             print('deleted audio file')
-#         else:
-#             print('file not found on disked, skipped deletion')
-#             return False
-#         if os.path.exists(metronome_path):
-#             os.remove(metronome_path)
-#             print('cleared metronome audio')
-#         else:
-#             print('metronome path not found')
-#             return False
-#     return True
-
-# @app.route('/api/songs/back-track-cleanup', methods = ['POST'])
-# def back_track_cleanup():
-#     data = request.json
-#     audio_url = data.get('audio_url')
-#     res = audio_cleanup(audio_url)
-#     return jsonify({"message": "back track cleanup failed" if not res else "back track clean successful"})
-
 #prevents imports of this file later on from running the actual backend server
 if __name__ == '__main__':
-    http_server = WSGIServer(('0.0.0.0', 5000), app)
-    print("Serving on http://0.0.0.0:5000")
+    # Railway assigns a dynamic PORT env var — it does not guarantee 5000
+    # is the port your service is reachable on, so read it at runtime
+    # instead of hardcoding it.
+    port = int(os.getenv("PORT", 5000))
+    http_server = WSGIServer(('0.0.0.0', port), app)
+    print(f"Serving on http://0.0.0.0:{port}")
 
     try:
         http_server.serve_forever()
