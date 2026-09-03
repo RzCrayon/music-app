@@ -221,6 +221,7 @@ def login_user():
     password = data.get('password')
 
     ip = get_remote_address()
+    print(ip)
     #60 for per minute
     record_attempt(ip, 'login', 60)
 
