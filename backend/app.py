@@ -221,7 +221,8 @@ def login_user():
     password = data.get('password')
 
     ip = get_remote_address()
-    print(ip)
+    print(f"ip:${ip}", flush = True)
+    print(request.headers.get("X-Forwarded-For"), flush=True)
     #60 for per minute
     record_attempt(ip, 'login', 60)
 
