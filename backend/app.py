@@ -26,6 +26,7 @@ from gevent.pywsgi import WSGIServer
 from zxcvbn import zxcvbn
 from token_supplier import JWT_SECRET, REFRESH_EXP_DAYS, generate_access_token, generate_refresh_token, token_required
 from dotenv import load_dotenv
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 load_dotenv()
 import os
@@ -38,6 +39,7 @@ import os
 
 #creates the port 5000 thing
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=2)
 
 # CORS_ORIGINS is comma seperated so that we can add in the netlify later on
 #for now tho default to http://localhost 
