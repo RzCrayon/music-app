@@ -47,6 +47,7 @@ Tech Stack & Architecture:
 
 Repository Structure: 
 
+```text
 ├── frontend/
 │   ├── public/                      # Static assets, instrument images, SVG loaders
 │   │   ├── fonts/                   # Web typography & custom music notation fonts
@@ -63,3 +64,4 @@ Repository Structure:
     ├── tasks.py                     # Celery & Redis task queue worker implementations
     ├── token_supplier.py            # JWT authentication manager
     └── song_builder.py              # [DEPRECATED] Legacy Fluid_R3 rendering script
+```
